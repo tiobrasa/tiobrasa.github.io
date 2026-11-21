@@ -9,7 +9,18 @@ const CONFIG = {
   diasLembreteCopia: 7
 };
 
-const FORMAS = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão' };
+const FORMAS = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão', dividido: 'Dividido' };
+const FORMAS_BASE = ['dinheiro', 'pix', 'cartao'];
+const ICONE_FORMA = { dinheiro: '💵', pix: '📱', cartao: '💳' };
+/* Quanto de uma venda entrou em cada forma (venda dividida conta cada parte na sua forma) */
+function textoForma(v) {
+  if (v.forma !== 'dividido' || !v.partes) return FORMAS[v.forma] || v.forma;
+  return Object.keys(v.partes).map((f) => ICONE_FORMA[f] + ' ' + fmt(v.partes[f])).join(' + ');
+}
+function partesDaVenda(v) {
+  if (v.forma === 'dividido' && v.partes) return v.partes;
+  return { [v.forma]: v.total };
+}
 const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const ORDEM_SEMANA = [1, 2, 3, 4, 5, 6, 0]; // começa na segunda
 
@@ -492,9 +503,52 @@ function terminarQuantidade(input) {
   toast('Espetinho tirado do pedido.');
 }
 
+/* Pagamento dividido: lê quanto vai em cada forma (dinheiro, Pix, cartão) */
+function lerPartes() {
+  const partes = {};
+  let invalido = false;
+  let soma = 0;
+  FORMAS_BASE.forEach((f) => {
+    const v = paraCentavos($('#parte-' + f).value);
+    if (Number.isNaN(v)) invalido = true;
+    else if (v) { partes[f] = v; soma += v; }
+  });
+  return { partes, soma, invalido };
+}
+
+function calcularDividido(total) {
+  const { partes, soma, invalido } = lerPartes();
+  if (invalido) return { ok: false, invalido: true };
+  if (!soma) return { ok: false, vazioDividido: true };
+  if (soma < total) return { ok: false, falta: total - soma };
+  if (soma > total) return { ok: false, passou: soma - total };
+  if (Object.keys(partes).length < 2) return { ok: false, umaSo: true };
+  // troco só da parte em dinheiro (opcional)
+  const emDinheiro = partes.dinheiro || 0;
+  const deu = paraCentavos($('#dividido-deu').value);
+  if (Number.isNaN(deu)) return { ok: false, invalido: true };
+  if (deu === null || !emDinheiro) return { ok: true, partes, pago: total, troco: 0 };
+  if (deu < emDinheiro) return { ok: false, faltaDinheiro: emDinheiro - deu };
+  return { ok: true, partes, pago: total - emDinheiro + deu, troco: deu - emDinheiro };
+}
+
+/* Preenche uma forma com o que falta para fechar o total */
+function preencherResto(forma) {
+  const total = totalPedido();
+  let outros = 0;
+  FORMAS_BASE.forEach((f) => {
+    if (f === forma) return;
+    const v = paraCentavos($('#parte-' + f).value);
+    if (v && !Number.isNaN(v)) outros += v;
+  });
+  $('#parte-' + forma).value = centavosParaCampo(Math.max(0, total - outros));
+  renderTroco();
+}
+
 /* Calcula o troco. */
 function calcularTroco() {
   const total = totalPedido();
+  if (formaPagamento === 'dividido') return calcularDividido(total);
   if (formaPagamento !== 'dinheiro') return { ok: true, pago: total, troco: 0 };
   const pago = paraCentavos($('#pago').value);
   if (pago === null) return { ok: true, pago: total, troco: 0, vazio: true };
@@ -507,12 +561,26 @@ function renderTroco() {
   const total = totalPedido();
   const box = $('#troco');
   $('#bloco-dinheiro').hidden = formaPagamento !== 'dinheiro';
+  $('#bloco-dividido').hidden = formaPagamento !== 'dividido';
   document.querySelectorAll('.atalho').forEach((b) => {
     const v = b.dataset.valor;
     b.classList.toggle('insuficiente', v !== 'exato' && Number(v) < total);
   });
   const r = calcularTroco();
-  if (formaPagamento !== 'dinheiro' || total === 0) {
+  if (formaPagamento === 'dividido') {
+    const st = $('#dividido-status');
+    const { partes } = lerPartes();
+    $('#dividido-deu-box').hidden = !partes.dinheiro;
+    if (total === 0) { st.className = 'troco'; st.innerHTML = ''; }
+    else if (r.invalido) { st.className = 'troco falta'; st.innerHTML = '<span>Valor não entendido. Use só números, ex.: 10 ou 10,50</span>'; }
+    else if (r.vazioDividido) { st.className = 'troco neutro'; st.innerHTML = `<span>Coloque quanto vai em cada forma. Toque em <strong>Resto</strong> para completar sozinho.</span>`; }
+    else if (r.falta) { st.className = 'troco falta'; st.innerHTML = `<span>Falta dividir</span><strong>${fmt(r.falta)}</strong>`; }
+    else if (r.passou) { st.className = 'troco falta'; st.innerHTML = `<span>Passou do total</span><strong>${fmt(r.passou)}</strong>`; }
+    else if (r.umaSo) { st.className = 'troco neutro'; st.innerHTML = '<span>Está tudo numa forma só. Divida entre duas ou escolha a forma lá em cima.</span>'; }
+    else if (r.faltaDinheiro) { st.className = 'troco falta'; st.innerHTML = `<span>Faltou em dinheiro</span><strong>${fmt(r.faltaDinheiro)}</strong>`; }
+    else { st.className = 'troco ok'; st.innerHTML = r.troco ? `<span>Fechou! Troco</span><strong>${fmt(r.troco)}</strong>` : `<span>Fechou certinho</span><strong>✓</strong>`; }
+    box.className = 'troco'; box.innerHTML = '';
+  } else if (formaPagamento !== 'dinheiro' || total === 0) {
     box.className = 'troco'; box.innerHTML = '';
   } else if (r.invalido) {
     box.className = 'troco falta'; box.innerHTML = '<span>Valor digitado não entendido. Use só números, ex.: 20 ou 20,50</span>';
@@ -561,12 +629,15 @@ function confirmarVenda() {
   dados.vendas.push({
     id: uid(), data: new Date().toISOString(), itens, total,
     forma: formaPagamento, pago: r.pago, troco: r.troco,
+    partes: formaPagamento === 'dividido' ? r.partes : null,
     clienteId: cli ? cli.id : null, clienteNome: cli ? cli.nome : null
   });
   salvar();
-  const msg = formaPagamento === 'dinheiro' && r.troco > 0
+  const msg = r.troco > 0
     ? `Venda salva · troco ${fmt(r.troco)}`
-    : `Venda salva · ${fmt(total)} no ${FORMAS[formaPagamento]}`;
+    : formaPagamento === 'dividido'
+      ? `Venda salva · ${fmt(total)} dividido`
+      : `Venda salva · ${fmt(total)} no ${FORMAS[formaPagamento]}`;
   limparPedido();
   renderHoje();
   toast('✅ ' + msg);
@@ -575,6 +646,8 @@ function confirmarVenda() {
 function limparPedido() {
   pedido.clear();
   $('#pago').value = '';
+  FORMAS_BASE.forEach((f) => { $('#parte-' + f).value = ''; });
+  $('#dividido-deu').value = '';
   $('#venda-cliente').value = '';
   $('.cliente-entrega').open = false;
   setForma('dinheiro');
@@ -867,14 +940,20 @@ function renderDias(faixa) {
 
 function renderPorForma(faixa) {
   const porForma = { dinheiro: 0, pix: 0, cartao: 0 };
-  dados.vendas.forEach((v) => { if (noPeriodo(v.data, faixa)) porForma[v.forma] = (porForma[v.forma] || 0) + v.total; });
+  let divididas = 0;
+  dados.vendas.forEach((v) => {
+    if (!noPeriodo(v.data, faixa)) return;
+    if (v.forma === 'dividido') divididas++;
+    const p = partesDaVenda(v);
+    Object.keys(p).forEach((f) => { porForma[f] = (porForma[f] || 0) + p[f]; });
+  });
   const total = porForma.dinheiro + porForma.pix + porForma.cartao;
-  const icone = { dinheiro: '💵', pix: '📱', cartao: '💳' };
   const box = $('#por-forma');
-  box.innerHTML = `<ul class="para-onde">${Object.keys(FORMAS).map((f) => `<li>
-      <div class="po-linha"><span class="po-nome">${icone[f]} ${FORMAS[f]}</span><span class="po-valor">${fmt(porForma[f])}<small>${pctTexto(porForma[f], total)}</small></span></div>
+  box.innerHTML = `<ul class="para-onde">${FORMAS_BASE.map((f) => `<li>
+      <div class="po-linha"><span class="po-nome">${ICONE_FORMA[f]} ${FORMAS[f]}</span><span class="po-valor">${fmt(porForma[f])}<small>${pctTexto(porForma[f], total)}</small></span></div>
       ${barra(pctDe(porForma[f], total), 'verde')}
-    </li>`).join('')}</ul>`;
+    </li>`).join('')}</ul>
+    ${divididas ? `<p class="dica">Inclui ${plural(divididas, 'venda dividida', 'vendas divididas')}: cada parte entrou na sua forma.</p>` : ''}`;
   animarBarras(box);
 }
 
@@ -955,9 +1034,9 @@ function renderVendas(faixa, periodo) {
   $('#vendas-lista').innerHTML = vendas.length
     ? [...vendas].sort((a, b) => b.data.localeCompare(a.data)).map((v) => `<li>
         <div class="info">
-          <p><strong>${mostrarData ? dataCurta(v.data) + ' ' : ''}${hora(v.data)}</strong> · ${FORMAS[v.forma] || v.forma}${v.clienteNome ? ' · ' + esc(v.clienteNome) : ''}</p>
+          <p><strong>${mostrarData ? dataCurta(v.data) + ' ' : ''}${hora(v.data)}</strong> · ${textoForma(v)}${v.clienteNome ? ' · ' + esc(v.clienteNome) : ''}</p>
           <p class="mini">${v.itens.map((i) => `${i.qtd}× ${esc(i.nome)}`).join(', ')}</p>
-          ${v.forma === 'dinheiro' && v.troco > 0 ? `<p class="mini">Pagou ${fmt(v.pago)} · troco ${fmt(v.troco)}</p>` : ''}
+          ${v.troco > 0 ? `<p class="mini">Pagou ${fmt(v.pago)} · troco ${fmt(v.troco)}</p>` : ''}
         </div>
         <div class="lado"><span class="valor-entrada">${fmt(v.total)}</span>
           <button type="button" class="btn btn-perigo btn-pequeno" data-desfazer="${v.id}">Desfazer</button></div>
@@ -1419,6 +1498,10 @@ function iniciar() {
   // Caixa
   document.querySelectorAll('.seg').forEach((b) => b.addEventListener('click', () => setForma(b.dataset.forma)));
   $('#pago').addEventListener('input', renderTroco);
+  // Pagamento dividido
+  document.querySelectorAll('[data-parte]').forEach((i) => i.addEventListener('input', renderTroco));
+  $('#dividido-deu').addEventListener('input', renderTroco);
+  document.querySelectorAll('[data-resto]').forEach((b) => b.addEventListener('click', () => preencherResto(b.dataset.resto)));
   document.querySelectorAll('.atalho').forEach((b) => b.addEventListener('click', () => {
     const v = b.dataset.valor === 'exato' ? totalPedido() : Number(b.dataset.valor);
     $('#pago').value = centavosParaCampo(v);

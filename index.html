@@ -98,8 +98,35 @@
               <button type="button" class="seg" data-forma="dinheiro" aria-pressed="true">💵<br>Dinheiro</button>
               <button type="button" class="seg" data-forma="pix" aria-pressed="false">📱<br>Pix</button>
               <button type="button" class="seg" data-forma="cartao" aria-pressed="false">💳<br>Cartão</button>
+              <button type="button" class="seg" data-forma="dividido" aria-pressed="false">➗<br>Dividir</button>
             </div>
           </fieldset>
+
+          <div id="bloco-dividido" hidden>
+            <p class="rotulo">Quanto em cada forma?</p>
+            <div class="partes">
+              <div class="parte">
+                <label for="parte-dinheiro">💵 Dinheiro</label>
+                <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="parte-dinheiro" data-parte="dinheiro" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+                <button type="button" class="btn-resto" data-resto="dinheiro" aria-label="Completar com o resto em dinheiro">Resto</button>
+              </div>
+              <div class="parte">
+                <label for="parte-pix">📱 Pix</label>
+                <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="parte-pix" data-parte="pix" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+                <button type="button" class="btn-resto" data-resto="pix" aria-label="Completar com o resto no Pix">Resto</button>
+              </div>
+              <div class="parte">
+                <label for="parte-cartao">💳 Cartão</label>
+                <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="parte-cartao" data-parte="cartao" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+                <button type="button" class="btn-resto" data-resto="cartao" aria-label="Completar com o resto no cartão">Resto</button>
+              </div>
+            </div>
+            <div id="dividido-deu-box" class="parte parte-deu" hidden>
+              <label for="dividido-deu">Em dinheiro, o cliente deu <span class="opcional">(para o troco)</span></label>
+              <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="dividido-deu" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+            </div>
+            <div id="dividido-status" class="troco" aria-live="polite"></div>
+          </div>
 
           <div id="bloco-dinheiro">
             <label for="pago" class="rotulo">Quanto o cliente deu?</label>

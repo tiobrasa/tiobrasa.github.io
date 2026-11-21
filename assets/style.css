@@ -189,7 +189,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.1rem; outline: none; }
 .grupo { border: 0; padding: 0; margin: 1rem 0 0; }
 .grupo legend { margin-bottom: .6rem; }
 .rotulo { font-weight: 800; display: block; margin-bottom: .45rem; }
-.segmentos { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.segmentos { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
 .seg {
   min-height: 70px; border-radius: var(--raio-m); border: 2px solid var(--borda-forte); background: var(--campo);
   font-weight: 800; cursor: pointer; padding: .4rem; touch-action: manipulation; line-height: 1.25;
@@ -697,3 +697,28 @@ body.sem-login { overflow: hidden; }
 }
 /* Topo fixo respeita a área do relógio/notch no celular */
 .topo { top: env(safe-area-inset-top, 0px); }
+
+/* Pagamento dividido */
+.seg { font-size: .95rem; }
+#bloco-dividido { margin-top: .8rem; }
+.partes { display: grid; gap: .5rem; }
+.parte { display: grid; grid-template-columns: 6.2rem 1fr auto; align-items: center; gap: .5rem; }
+.parte label { font-weight: 800; font-size: .95rem; }
+.parte .campo-dinheiro { padding: 0 .6rem; }
+.parte .campo-dinheiro input { min-height: 46px; font-size: 1.15rem; }
+.parte .campo-dinheiro span { font-size: 1rem; }
+.btn-resto { min-height: 46px; padding: .2rem .75rem; font-size: .85rem; }
+.parte-deu { grid-template-columns: 1fr 9rem; margin-top: .6rem; }
+.parte-deu label { font-size: .9rem; }
+#dividido-status { margin-top: .6rem; }
+@media (max-width: 380px) {
+  .seg { font-size: .8rem; padding: .2rem; }
+  .parte { grid-template-columns: 5.2rem 1fr auto; }
+}
+.btn-resto {
+  border-radius: var(--raio-p); border: 2px solid var(--borda-forte); background: var(--campo);
+  font-weight: 800; cursor: pointer; touch-action: manipulation; color: var(--primaria-texto);
+  transition: transform .15s var(--suave), border-color .2s;
+}
+.btn-resto:hover { border-color: var(--primaria); }
+.btn-resto:active { transform: scale(.94); }
