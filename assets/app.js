@@ -167,7 +167,8 @@ function estadoInicial() {
   return {
     versao: 2,
     // Item de EXEMPLO: o Gabriel troca pelo cardápio real dele.
-    cardapio: [{ id: uid(), nome: 'Espetinho de carne', preco: 1200, custo: null, exemplo: true }],
+    // Com a nuvem ligada, começa vazio (o cardápio vem da nuvem). Sem nuvem, mostra um EXEMPLO para trocar.
+    cardapio: window.NUVEM_CONFIG ? [] : [{ id: uid(), nome: 'Espetinho de carne', preco: 1200, custo: null, exemplo: true }],
     clientes: [],
     vendas: [],
     gastos: [],

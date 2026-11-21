@@ -170,19 +170,21 @@ async function iniciarNuvem() {
     }
   }
 
-  /* Primeira vez num celular: junta o que já tinha nele com o que está na nuvem (nada se perde) */
+  /* Primeira vez num celular.
+     Regra: A NUVEM MANDA. Se a loja já tem dados na nuvem, o celular passa a usar só os da nuvem
+     (assim nada que foi apagado em outro aparelho volta). Só se a nuvem estiver vazia de verdade
+     é que o que estava neste celular sobe — e o espetinho de EXEMPLO nunca sobe. */
   function juntarPrimeiraVez(user, remoto) {
     const local = App.obterDados();
-    const nuvemVazia = COLECOES.every((c) => !(remoto[c] || []).length);
+    const nuvemTemDados = COLECOES.some((c) => (remoto[c] || []).length) ||
+      !!(remoto.config && remoto.config.funcionamento);
     COLECOES.forEach((c) => {
-      const mapa = new Map((remoto[c] || []).map((it) => [it.id, it]));
-      (local[c] || []).forEach((it) => {
-        if (it.exemplo && !nuvemVazia) return; // não duplica o espetinho de exemplo
-        if (!mapa.has(it.id)) mapa.set(it.id, it);
-      });
-      App.aplicarDaNuvem(c, [...mapa.values()]);
+      const itens = nuvemTemDados
+        ? (remoto[c] || [])
+        : (local[c] || []).filter((it) => !it.exemplo);
+      App.aplicarDaNuvem(c, itens);
     });
-    if (remoto.config && remoto.config.funcionamento && remoto.config.funcionamento.configurado) {
+    if (remoto.config && remoto.config.funcionamento) {
       App.aplicarDaNuvem('config', remoto.config);
     }
     localStorage.setItem(chaveSync(user.uid), new Date().toISOString());
@@ -197,7 +199,10 @@ async function iniciarNuvem() {
     const ops = [];
     COLECOES.forEach((c) => {
       const atual = new Map();
-      (dados[c] || []).forEach((it, i) => atual.set(it.id, c === 'cardapio' ? Object.assign({}, it, { ordem: i }) : it));
+      (dados[c] || []).forEach((it, i) => {
+        if (it.exemplo) return; // o espetinho de exemplo nunca vai para a nuvem
+        atual.set(it.id, c === 'cardapio' ? Object.assign({}, it, { ordem: i }) : it);
+      });
       atual.forEach((obj, id) => {
         const js = estavel(obj);
         if (ultimo[c].get(id) !== js) { ops.push({ tipo: 'set', ref: F.doc(db, 'lojas', loja, c, id), obj }); ultimo[c].set(id, js); }
