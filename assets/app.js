@@ -1589,7 +1589,12 @@ function prepararApp() {
   // atualização automática e funcionar sem internet (só em endereço seguro: https ou localhost)
   const dentroDeOutraPagina = window.top !== window.self; // ex.: página do Claude
   if ('serviceWorker' in navigator && window.isSecureContext && !dentroDeOutraPagina) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      // app aberto há muito tempo: confere versão nova a cada 15 min e quando volta para a tela
+      const conferir = () => reg.update().catch(() => {});
+      setInterval(conferir, 15 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) conferir(); });
+    }).catch(() => {});
     // quando sair versão nova do sistema, recarrega sozinho uma vez
     let recarregou = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {

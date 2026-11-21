@@ -121,31 +121,48 @@ async function iniciarNuvem() {
     const primeiraVezAqui = !localStorage.getItem(chaveSync(user.uid));
     const iniciais = {};
     const doServidor = new Set();
+    const aplicado = {}; // o que já foi aplicado na tela (para não redesenhar à toa)
+    let juntou = false;
+
+    const juntarAgora = () => {
+      if (juntou) return;
+      juntou = true;
+      clearTimeout(limite);
+      juntarPrimeiraVez(user, iniciais);
+    };
+    // Se a confirmação do servidor demorar (internet fraca), junta com o que já chegou depois de 10 s
+    const limite = primeiraVezAqui ? setTimeout(() => { if (navigator.onLine) juntarAgora(); }, 10000) : null;
 
     const aoReceber = (nome, valor, meta) => {
-      if (primeiraVezAqui && !window.Nuvem.ativa) {
+      if (primeiraVezAqui && !juntou) {
         // primeira vez neste celular: espera os dados da nuvem chegarem para juntar com os daqui
         iniciais[nome] = valor;
         if (!meta.fromCache) doServidor.add(nome);
-        if (doServidor.size === COLECOES.length + 1) juntarPrimeiraVez(user, iniciais);
+        if (doServidor.size === COLECOES.length + 1) juntarAgora();
         else App.statusNuvem('Buscando os dados da loja…', 'neutro');
         return;
       }
+      const js = estavel(valor);
+      if (aplicado[nome] === js) return;
+      aplicado[nome] = js;
       App.aplicarDaNuvem(nome, valor);
     };
 
+    // includeMetadataChanges: avisa também quando o servidor confirma (sem isso, às vezes o aviso não chegava)
+    const opc = { includeMetadataChanges: true };
     COLECOES.forEach((c) => {
-      desligar.push(F.onSnapshot(F.collection(db, 'lojas', loja, c), (snap) => {
+      desligar.push(F.onSnapshot(F.collection(db, 'lojas', loja, c), opc, (snap) => {
         const itens = snap.docs.map((d) => d.data());
         ultimo[c] = new Map(itens.map((it) => [it.id, estavel(it)]));
         aoReceber(c, itens, snap.metadata);
       }, falhou));
     });
-    desligar.push(F.onSnapshot(F.doc(db, 'lojas', loja), (snap) => {
+    desligar.push(F.onSnapshot(F.doc(db, 'lojas', loja), opc, (snap) => {
       const d = snap.data() || {};
       ultimoConfig = estavel(d.funcionamento || null);
       aoReceber('config', d, snap.metadata);
     }, falhou));
+    desligar.push(() => clearTimeout(limite));
 
     if (!primeiraVezAqui) {
       window.Nuvem.ativa = true;

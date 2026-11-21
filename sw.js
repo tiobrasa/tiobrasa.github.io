@@ -2,7 +2,7 @@
    - Com internet: sempre pega a versão mais nova do sistema (atualiza sozinho para todos).
    - Sem internet: abre a última versão guardada no aparelho.
    Ao publicar mudanças grandes, aumente o número da VERSAO. */
-const VERSAO = 'tio-brasa-v6';
+const VERSAO = 'tio-brasa-v7';
 const ARQUIVOS = [
   './',
   'index.html',
