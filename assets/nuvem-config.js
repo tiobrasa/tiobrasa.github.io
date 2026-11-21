@@ -1,19 +1,18 @@
 /* Configuração da nuvem (Firebase) do Tio Brasa.
-   AVISO PARA O DANIEL: enquanto NUVEM_CONFIG for null, o sistema funciona só no aparelho (sem login).
-   Depois de criar o projeto no Firebase, cole aqui os dados de "Configuração do SDK" e o e-mail da loja.
-   Esses dados NÃO são senha: podem ficar no site. A senha fica só no Firebase. */
-window.NUVEM_CONFIG = null;
-/* Exemplo de como fica preenchido:
+   Projeto Firebase: tio-brasa-1ae1f (conta Google da Brazuka Web), criado em 21/11/2026.
+   Esses dados NÃO são senha: podem ficar no site. A senha da loja fica só no Firebase.
+   Para desligar a nuvem (voltar a salvar só no aparelho), troque NUVEM_CONFIG por null. */
 window.NUVEM_CONFIG = {
-  apiKey: 'AIza...',
-  authDomain: 'tio-brasa.firebaseapp.com',
-  projectId: 'tio-brasa',
-  appId: '1:123:web:abc'
+  apiKey: 'AIzaSyAryMtRyrgwn28vQq58IJHfKeZYdhsV5OU',
+  authDomain: 'tio-brasa-1ae1f.firebaseapp.com',
+  projectId: 'tio-brasa-1ae1f',
+  storageBucket: 'tio-brasa-1ae1f.firebasestorage.app',
+  messagingSenderId: '955511694260',
+  appId: '1:955511694260:web:74379a7c1eaae0f71d48e1'
 };
-*/
 
 // E-mail do login único da loja (já vem preenchido na tela de entrar; a equipe só digita a senha)
-window.NUVEM_EMAIL = '';
+window.NUVEM_EMAIL = 'loja@tiobrasa.github.io';
 
 // Nome da "pasta" dos dados na nuvem
 window.NUVEM_LOJA = 'tio-brasa';
