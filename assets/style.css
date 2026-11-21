@@ -722,3 +722,18 @@ body.sem-login { overflow: hidden; }
 }
 .btn-resto:hover { border-color: var(--primaria); }
 .btn-resto:active { transform: scale(.94); }
+
+/* Olhinho para ver a senha */
+.campo-senha { position: relative; }
+.campo-senha input { width: 100%; padding-right: 3.2rem; }
+.btn-olho {
+  position: absolute; right: .35rem; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border: 0; border-radius: var(--raio-p);
+  background: transparent; color: var(--texto-suave); cursor: pointer;
+  display: grid; place-items: center; touch-action: manipulation;
+}
+.btn-olho:hover { color: var(--primaria-texto); background: var(--campo-hover); }
+.btn-olho .olho-fechado { display: none; }
+.btn-olho[aria-pressed="true"] .olho-aberto { display: none; }
+.btn-olho[aria-pressed="true"] .olho-fechado { display: block; }
+.btn-olho[aria-pressed="true"] { color: var(--primaria-texto); }

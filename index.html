@@ -45,7 +45,13 @@
       </div>
       <div class="campo">
         <label for="login-senha">Senha</label>
-        <input id="login-senha" type="password" autocomplete="current-password" required>
+        <div class="campo-senha">
+          <input id="login-senha" type="password" autocomplete="current-password" required>
+          <button type="button" class="btn-olho" data-ver-senha="login-senha" aria-label="Mostrar a senha" aria-pressed="false" title="Mostrar a senha">
+            <svg class="olho-aberto" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <svg class="olho-fechado" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
       <p id="login-erro" class="erro" role="alert"></p>
       <button type="submit" id="btn-entrar" class="btn btn-primario btn-grande">Entrar</button>

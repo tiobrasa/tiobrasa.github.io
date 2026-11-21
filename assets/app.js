@@ -1625,3 +1625,17 @@ function prepararApp() {
 
 iniciar();
 prepararApp();
+
+/* Olhinho: mostra ou esconde a senha para conferir o que foi digitado */
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ver-senha]');
+  if (!b) return;
+  const campo = document.getElementById(b.dataset.verSenha);
+  if (!campo) return;
+  const mostrar = campo.type === 'password';
+  campo.type = mostrar ? 'text' : 'password';
+  b.setAttribute('aria-pressed', String(mostrar));
+  b.setAttribute('aria-label', mostrar ? 'Esconder a senha' : 'Mostrar a senha');
+  b.title = mostrar ? 'Esconder a senha' : 'Mostrar a senha';
+  campo.focus();
+});
