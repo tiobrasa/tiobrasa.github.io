@@ -15,7 +15,7 @@ const ICONE_FORMA = { dinheiro: '💵', pix: '📱', cartao: '💳' };
 /* Quanto de uma venda entrou em cada forma (venda dividida conta cada parte na sua forma) */
 function textoForma(v) {
   if (v.forma !== 'dividido' || !v.partes) return FORMAS[v.forma] || v.forma;
-  return Object.keys(v.partes).map((f) => ICONE_FORMA[f] + ' ' + fmt(v.partes[f])).join(' + ');
+  return Object.keys(v.partes).map((f) => FORMAS[f] + ' ' + fmt(v.partes[f])).join(' + ');
 }
 function partesDaVenda(v) {
   if (v.forma === 'dividido' && v.partes) return v.partes;
@@ -280,7 +280,7 @@ window.App = {
     const el = $('#status-nuvem');
     if (!el) return;
     el.hidden = false;
-    el.textContent = ({ ok: '☁️ ', offline: '📴 ', erro: '⚠️ ', neutro: '⏳ ' }[tipo] || '') + texto;
+    el.textContent = texto;
     el.className = 'status-nuvem ' + (tipo || '');
     el.title = texto;
   },
@@ -430,7 +430,7 @@ function renderHoje() {
   let txt = '';
   if (f.configurado) {
     txt = f.dias[wd].abre
-      ? `✅ Hoje (${DIAS_SEMANA[wd].toLowerCase()}) é dia de abrir${horarioDoDia(wd) ? ': ' + horarioDoDia(wd) : ''}.`
+      ? `Hoje (${DIAS_SEMANA[wd].toLowerCase()}) é dia de abrir${horarioDoDia(wd) ? ': ' + horarioDoDia(wd) : ''}.`
       : `Hoje (${DIAS_SEMANA[wd].toLowerCase()}) está marcado como fechado. Se vender, conta do mesmo jeito.`;
   }
   $('#hoje-status').textContent = txt;
@@ -610,10 +610,10 @@ function renderInfoCliente() {
   if (!c) { box.hidden = true; box.innerHTML = ''; return; }
   box.hidden = false;
   box.innerHTML = `
-    ${c.telefone ? `<p>📞 <a class="tel" href="tel:${soDigitos(c.telefone)}">${esc(c.telefone)}</a></p>` : ''}
-    ${c.endereco ? `<p>📍 ${esc(c.endereco)}</p>` : '<p class="falta-info">Sem endereço cadastrado</p>'}
-    ${c.referencia ? `<p>🧭 ${esc(c.referencia)}</p>` : ''}
-    ${c.obs ? `<p>📝 ${esc(c.obs)}</p>` : ''}`;
+    ${c.telefone ? `<p><a class="tel" href="tel:${soDigitos(c.telefone)}">${esc(c.telefone)}</a></p>` : ''}
+    ${c.endereco ? `<p>${esc(c.endereco)}</p>` : '<p class="falta-info">Sem endereço cadastrado</p>'}
+    ${c.referencia ? `<p class="mini">Ref.: ${esc(c.referencia)}</p>` : ''}
+    ${c.obs ? `<p class="mini">${esc(c.obs)}</p>` : ''}`;
 }
 
 function confirmarVenda() {
@@ -640,7 +640,7 @@ function confirmarVenda() {
       : `Venda salva · ${fmt(total)} no ${FORMAS[formaPagamento]}`;
   limparPedido();
   renderHoje();
-  toast('✅ ' + msg);
+  toast(msg);
 }
 
 function limparPedido() {
@@ -875,9 +875,9 @@ function renderContas() {
 
   const saiu = tot.custo + tot.gastos + tot.perdas;
   $('#resumo').innerHTML = `
-    <div class="bloco-num entrou"><span>💰 Entrou</span><strong>${fmt(tot.entradas)}</strong><small>${plural(tot.nVendas, 'venda', 'vendas')} · ${plural(tot.qtd, 'espetinho', 'espetinhos')}</small></div>
-    <div class="bloco-num saiu"><span>💸 Saiu</span><strong>${fmt(saiu)}</strong><small>veja cada gasto logo abaixo ↓</small></div>
-    <div class="bloco-num destaque${resultado < 0 ? ' negativo' : ''}"><span>${resultado < 0 ? '⚠️ Prejuízo (faltou)' : '✅ Lucro (sobrou)'}</span><strong>${fmt(Math.abs(resultado))}</strong><small>o que entrou menos o que saiu</small></div>`;
+    <div class="bloco-num entrou"><span>Entrou</span><strong>${fmt(tot.entradas)}</strong><small>${plural(tot.nVendas, 'venda', 'vendas')} · ${plural(tot.qtd, 'espetinho', 'espetinhos')}</small></div>
+    <div class="bloco-num saiu"><span>Saiu</span><strong>${fmt(saiu)}</strong><small>custos, gastos e perdas</small></div>
+    <div class="bloco-num destaque${resultado < 0 ? ' negativo' : ''}"><span>${resultado < 0 ? 'Prejuízo' : 'Lucro'}</span><strong>${fmt(Math.abs(resultado))}</strong><small>entrou menos saiu</small></div>`;
 
   renderParaOnde(faixa, tot);
   renderDias(faixa);
@@ -889,7 +889,7 @@ function renderContas() {
 
   const avisoF = $('#aviso-funcionamento');
   avisoF.hidden = dados.funcionamento.configurado;
-  avisoF.innerHTML = '🗓️ Marque os <strong>dias e horário que a loja abre</strong> (lá embaixo nesta página). Assim o dia a dia não mostra dia fechado como R$ 0. <button type="button" class="btn btn-secundario btn-pequeno" data-rolar="form-funcionamento">Marcar agora</button>';
+  avisoF.innerHTML = '<span>Falta marcar os dias que a loja abre.</span> <button type="button" class="btn-link" data-rolar="form-funcionamento">Marcar</button>';
 }
 
 function renderDias(faixa) {
@@ -950,7 +950,7 @@ function renderPorForma(faixa) {
   const total = porForma.dinheiro + porForma.pix + porForma.cartao;
   const box = $('#por-forma');
   box.innerHTML = `<ul class="para-onde">${FORMAS_BASE.map((f) => `<li>
-      <div class="po-linha"><span class="po-nome">${ICONE_FORMA[f]} ${FORMAS[f]}</span><span class="po-valor">${fmt(porForma[f])}<small>${pctTexto(porForma[f], total)}</small></span></div>
+      <div class="po-linha"><span class="po-nome">${FORMAS[f]}</span><span class="po-valor">${fmt(porForma[f])}<small>${pctTexto(porForma[f], total)}</small></span></div>
       ${barra(pctDe(porForma[f], total), 'verde')}
     </li>`).join('')}</ul>
     ${divididas ? `<p class="dica">Inclui ${plural(divididas, 'venda dividida', 'vendas divididas')}: cada parte entrou na sua forma.</p>` : ''}`;
@@ -968,16 +968,16 @@ function renderParaOnde(faixa, tot) {
   });
   const linhas = [];
   if (tot.custo || tot.qtd) {
-    linhas.push({ nome: '🍢 Custo dos espetinhos vendidos', sub: tot.semCusto ? `<span class="falta-info">${tot.semCusto} vendidos sem custo cadastrado</span>` : plural(tot.qtd, 'espetinho', 'espetinhos'), valor: tot.custo });
+    linhas.push({ nome: 'Custo dos espetinhos', sub: tot.semCusto ? `<span class="falta-info">${tot.semCusto} vendidos sem custo cadastrado</span>` : plural(tot.qtd, 'espetinho', 'espetinhos'), valor: tot.custo });
   }
   [...porTipo.entries()].sort((a, b) => b[1].valor - a[1].valor)
     .forEach(([nome, r]) => linhas.push({ nome: esc(nome), sub: plural(r.vezes, 'vez', 'vezes'), valor: r.valor }));
-  if (tot.perdas) linhas.push({ nome: '🗑️ Espetinhos perdidos', sub: 'estragou ou caiu', valor: tot.perdas });
+  if (tot.perdas) linhas.push({ nome: 'Perdas', sub: 'estragou ou caiu', valor: tot.perdas });
 
   const total = tot.custo + tot.gastos + tot.perdas;
   const box = $('#para-onde');
   if (!linhas.length) {
-    box.innerHTML = '<p class="vazio">Nenhum gasto nesse período. Anote os gastos na aba <button type="button" class="btn btn-secundario btn-pequeno" data-ir="gastos">💸 Gastos</button></p>';
+    box.innerHTML = '<p class="vazio">Nenhum gasto nesse período. Anote os gastos na aba <button type="button" class="btn btn-secundario btn-pequeno" data-ir="gastos">Gastos</button></p>';
     return;
   }
   box.innerHTML = `<ul class="para-onde">${linhas.map((l) => `<li>
@@ -1097,7 +1097,7 @@ function renderAvisoCopia() {
   const dias = dados.ultimaCopia ? (Date.now() - new Date(dados.ultimaCopia)) / 864e5 : Infinity;
   if (temDados && dias >= CONFIG.diasLembreteCopia) {
     aviso.hidden = false;
-    aviso.innerHTML = `💾 ${dados.ultimaCopia ? `Faz ${Math.floor(dias)} dias que você não baixa uma cópia.` : 'Você ainda não baixou nenhuma cópia dos dados.'}
+    aviso.innerHTML = `${dados.ultimaCopia ? `Faz ${Math.floor(dias)} dias que você não baixa uma cópia.` : 'Você ainda não baixou nenhuma cópia dos dados.'}
       Lá embaixo tem o botão <strong>Baixar cópia de segurança</strong>.`;
   } else {
     aviso.hidden = true;
@@ -1290,12 +1290,12 @@ function renderClientes() {
   if (!lista.length) { ul.innerHTML = '<li class="vazio">Nenhum cliente encontrado nessa busca.</li>'; return; }
   ul.innerHTML = lista.map((c) => `<li>
       <h3>${esc(c.nome)}</h3>
-      ${c.telefone ? `<p>📞 <a class="tel" href="tel:${soDigitos(c.telefone)}">${esc(c.telefone)}</a></p>` : ''}
-      ${c.endereco ? `<p>📍 ${esc(c.endereco)}</p>` : ''}
+      ${c.telefone ? `<p><a class="tel" href="tel:${soDigitos(c.telefone)}">${esc(c.telefone)}</a></p>` : ''}
+      ${c.endereco ? `<p>${esc(c.endereco)}</p>` : ''}
       ${c.referencia ? `<p><span class="rotulo-linha">Referência:</span> ${esc(c.referencia)}</p>` : ''}
       ${c.obs ? `<p><span class="rotulo-linha">Obs.:</span> ${esc(c.obs)}</p>` : ''}
       <div class="acoes">
-        <button type="button" class="btn btn-primario btn-pequeno" data-vender="${c.id}">🧾 Vender para ele</button>
+        <button type="button" class="btn btn-primario btn-pequeno" data-vender="${c.id}">Vender</button>
         <button type="button" class="btn btn-leve btn-pequeno" data-editar-cli="${c.id}">Editar</button>
         <button type="button" class="btn btn-perigo btn-pequeno" data-excluir-cli="${c.id}">Excluir</button>
       </div>
@@ -1413,7 +1413,7 @@ function iniciar() {
     else if (d.excluirGasto) excluirGasto(d.excluirGasto);
     else if (d.excluirPerda) excluirPerda(d.excluirPerda);
     else if (d.desfazer) desfazerVenda(d.desfazer);
-    else if (d.rolar) { const el = document.getElementById(d.rolar); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const c = el.querySelector('input'); if (c) c.focus({ preventScroll: true }); }
+    else if (d.rolar) { const el = document.getElementById(d.rolar); const det = el.closest('details'); if (det) det.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const c = el.querySelector('input'); if (c) c.focus({ preventScroll: true }); }
     else if ('fechar' in d) fecharDialogo(t.closest('dialog'));
   });
 

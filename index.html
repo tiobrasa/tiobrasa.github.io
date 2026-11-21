@@ -28,7 +28,7 @@
     <h1 id="nome-loja">Tio Brasa</h1>
     <div class="topo-direita">
       <span id="status-nuvem" class="status-nuvem" role="status" hidden></span>
-      <button type="button" id="btn-instalar" class="btn-instalar" hidden>📲 Instalar</button>
+      <button type="button" id="btn-instalar" class="btn-instalar" hidden>Instalar</button>
       <span class="topo-data" id="topo-data"></span>
     </div>
   </header>
@@ -65,12 +65,25 @@
   </div>
 
   <nav class="abas" aria-label="Seções">
-    <button type="button" class="aba-btn" data-aba="caixa"><span aria-hidden="true">🧾</span>Vender</button>
-    <button type="button" class="aba-btn" data-aba="gastos"><span aria-hidden="true">💸</span>Gastos</button>
-    <button type="button" class="aba-btn" data-aba="contas"><span aria-hidden="true">📊</span>Contas</button>
-    <button type="button" class="aba-btn" data-aba="cardapio"><span aria-hidden="true">🍢</span>Cardápio</button>
-    <button type="button" class="aba-btn" data-aba="clientes"><span aria-hidden="true">👥</span>Clientes</button>
+    <button type="button" class="aba-btn" data-aba="caixa"><svg class="ic" aria-hidden="true"><use href="#i-vender"/></svg>Vender</button>
+    <button type="button" class="aba-btn" data-aba="gastos"><svg class="ic" aria-hidden="true"><use href="#i-gastos"/></svg>Gastos</button>
+    <button type="button" class="aba-btn" data-aba="contas"><svg class="ic" aria-hidden="true"><use href="#i-contas"/></svg>Contas</button>
+    <button type="button" class="aba-btn" data-aba="cardapio"><svg class="ic" aria-hidden="true"><use href="#i-cardapio"/></svg>Cardápio</button>
+    <button type="button" class="aba-btn" data-aba="clientes"><svg class="ic" aria-hidden="true"><use href="#i-clientes"/></svg>Clientes</button>
   </nav>
+
+  <!-- Ícones de linha (desenhados aqui, sem depender de internet) -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="i-vender" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-2.5-1.6L13 21l-2.5-1.6L8 21l-2-1.3z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+    <symbol id="i-gastos" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><path d="M16 15h2"/><path d="M7 6V4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V6"/></symbol>
+    <symbol id="i-contas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></symbol>
+    <symbol id="i-cardapio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 20 4"/><rect x="6.5" y="11.5" width="4" height="4" rx="1" transform="rotate(-45 8.5 13.5)"/><rect x="10" y="8" width="4" height="4" rx="1" transform="rotate(-45 12 10)"/><rect x="13.5" y="4.5" width="4" height="4" rx="1" transform="rotate(-45 15.5 6.5)"/></symbol>
+    <symbol id="i-clientes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14a6.5 6.5 0 0 1 3.5 6"/></symbol>
+    <symbol id="i-dinheiro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></symbol>
+    <symbol id="i-pix" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20.5 12 12 20.5 3.5 12z"/><path d="m8.5 12 3.5 3.5 3.5-3.5L12 8.5z"/></symbol>
+    <symbol id="i-cartao" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></symbol>
+    <symbol id="i-dividir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><circle cx="12" cy="6.5" r="1.4"/><circle cx="12" cy="17.5" r="1.4"/></symbol>
+  </svg>
 
   <main id="conteudo" tabindex="-1">
 
@@ -83,8 +96,7 @@
       <p id="hoje-status" class="dica"></p>
       <div class="caixa-grade">
         <div class="caixa-itens">
-          <h3 class="passo"><span class="passo-num" aria-hidden="true">1</span>Toque no espetinho que o cliente pediu</h3>
-          <p class="dica">Toque para pôr ou tirar. Mais de um: use <strong>+</strong> e <strong>−</strong> ou digite o número no pedido.</p>
+          <h3 class="passo">Espetinhos</h3>
           <div id="itens-grade" class="itens-grade"></div>
         </div>
 
@@ -99,30 +111,30 @@
           </div>
 
           <fieldset class="grupo">
-            <legend class="passo"><span class="passo-num" aria-hidden="true">2</span>Como o cliente pagou?</legend>
+            <legend class="passo">Pagamento</legend>
             <div class="segmentos" id="formas">
-              <button type="button" class="seg" data-forma="dinheiro" aria-pressed="true">💵<br>Dinheiro</button>
-              <button type="button" class="seg" data-forma="pix" aria-pressed="false">📱<br>Pix</button>
-              <button type="button" class="seg" data-forma="cartao" aria-pressed="false">💳<br>Cartão</button>
-              <button type="button" class="seg" data-forma="dividido" aria-pressed="false">➗<br>Dividir</button>
+              <button type="button" class="seg" data-forma="dinheiro" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="#i-dinheiro"/></svg>Dinheiro</button>
+              <button type="button" class="seg" data-forma="pix" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-pix"/></svg>Pix</button>
+              <button type="button" class="seg" data-forma="cartao" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-cartao"/></svg>Cartão</button>
+              <button type="button" class="seg" data-forma="dividido" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-dividir"/></svg>Dividir</button>
             </div>
           </fieldset>
 
           <div id="bloco-dividido" hidden>
-            <p class="rotulo">Quanto em cada forma?</p>
+            <p class="rotulo">Valor em cada forma</p>
             <div class="partes">
               <div class="parte">
-                <label for="parte-dinheiro">💵 Dinheiro</label>
+                <label for="parte-dinheiro">Dinheiro</label>
                 <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="parte-dinheiro" data-parte="dinheiro" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
                 <button type="button" class="btn-resto" data-resto="dinheiro" aria-label="Completar com o resto em dinheiro">Resto</button>
               </div>
               <div class="parte">
-                <label for="parte-pix">📱 Pix</label>
+                <label for="parte-pix">Pix</label>
                 <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="parte-pix" data-parte="pix" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
                 <button type="button" class="btn-resto" data-resto="pix" aria-label="Completar com o resto no Pix">Resto</button>
               </div>
               <div class="parte">
-                <label for="parte-cartao">💳 Cartão</label>
+                <label for="parte-cartao">Cartão</label>
                 <div class="campo-dinheiro"><span aria-hidden="true">R$</span><input id="parte-cartao" data-parte="cartao" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
                 <button type="button" class="btn-resto" data-resto="cartao" aria-label="Completar com o resto no cartão">Resto</button>
               </div>
@@ -151,14 +163,12 @@
           </div>
 
           <details class="grupo cliente-entrega">
-            <summary>🛵 É entrega? Escolher cliente <span class="opcional">(se não for, pule)</span></summary>
+            <summary>Entrega para cliente <span class="opcional">opcional</span></summary>
             <label for="venda-cliente" class="sr-only">Cliente da entrega</label>
             <select id="venda-cliente"></select>
             <div id="venda-cliente-info" class="cliente-info" hidden></div>
           </details>
-
-          <h3 class="passo passo-final"><span class="passo-num" aria-hidden="true">3</span>Confirme a venda</h3>
-          <button type="button" id="btn-confirmar" class="btn btn-primario btn-grande">✔ Confirmar venda</button>
+          <button type="button" id="btn-confirmar" class="btn btn-primario btn-grande">Confirmar venda</button>
           <button type="button" id="btn-limpar" class="btn btn-leve">Começar de novo</button>
         </div>
       </div>
@@ -169,14 +179,13 @@
       <div class="cabeca-aba">
         <h2 id="t-gastos" class="titulo-aba">Gastos</h2>
       </div>
-      <p class="ajuda">Anote aqui tudo que você compra para a loja. Cada coisa fica separada, para você ver quanto gasta com cada uma.</p>
 
       <div class="duas-colunas">
         <div class="cartao">
-          <h3>Anotar um gasto</h3>
+          <h3>Novo gasto</h3>
           <form id="form-gasto" novalidate>
             <fieldset class="grupo grupo-topo">
-              <legend class="passo"><span class="passo-num" aria-hidden="true">1</span>O que você comprou?</legend>
+              <legend class="passo">Tipo de gasto</legend>
               <div id="tipos-chips" class="chips"></div>
               <div id="novo-tipo-box" class="novo-tipo" hidden>
                 <label for="novo-tipo" class="sr-only">Nome do novo tipo de gasto</label>
@@ -184,7 +193,6 @@
                 <button type="button" id="btn-add-tipo" class="btn btn-secundario">Criar</button>
               </div>
             </fieldset>
-            <p class="passo"><span class="passo-num" aria-hidden="true">2</span>Quanto custou e quando?</p>
             <div class="campo-dupla">
               <div class="campo">
                 <label for="gasto-valor">Valor (R$)</label>
@@ -200,8 +208,7 @@
               <input id="gasto-obs" type="text" maxlength="80" placeholder="Ex.: 2 sacos de 5 kg">
             </div>
             <p id="gasto-erro" class="erro" role="alert"></p>
-            <p class="passo"><span class="passo-num" aria-hidden="true">3</span>Salve</p>
-            <button type="submit" class="btn btn-primario btn-largo btn-grande">✔ Salvar gasto</button>
+            <button type="submit" class="btn btn-primario btn-largo btn-grande">Salvar gasto</button>
           </form>
         </div>
 
@@ -236,7 +243,7 @@
 
       <div class="cartao">
         <div class="cabeca-cartao">
-          <h3>Quanto gastou com cada coisa</h3>
+          <h3>Gastos por tipo</h3>
           <label class="sr-only" for="periodo-gastos">Período dos gastos</label>
           <select id="periodo-gastos" class="periodo">
             <option value="hoje">Hoje</option>
@@ -247,15 +254,16 @@
             <option value="tudo">Tudo</option>
           </select>
         </div>
-        <p class="dica">Toque em cada item para ver os gastos dele, um por um.</p>
         <div id="gastos-grupos" class="gastos-grupos"></div>
       </div>
 
-      <div class="cartao">
-        <h3>Suas coisas de gasto</h3>
-        <p class="dica">Você pode trocar o nome ou apagar. Os gastos que já foram anotados continuam guardados.</p>
-        <ul id="tipos-lista" class="lista-simples"></ul>
-      </div>
+      <details class="ajustes">
+        <summary>Editar tipos de gasto</summary>
+        <div class="ajustes-corpo">
+          <p class="dica">Trocar o nome ou apagar não muda os gastos já anotados.</p>
+          <ul id="tipos-lista" class="lista-simples"></ul>
+        </div>
+      </details>
     </section>
 
     <!-- ========== CONTAS ========== -->
@@ -272,7 +280,6 @@
           <option value="tudo">Tudo</option>
         </select>
       </div>
-      <p class="ajuda">Aqui você vê quanto entrou, quanto saiu e quanto sobrou. Escolha o período no botão acima.</p>
 
       <div id="aviso-copia" class="aviso" hidden></div>
       <div id="aviso-funcionamento" class="aviso" hidden></div>
@@ -281,7 +288,6 @@
 
       <div class="cartao">
         <h3>Para onde foi o dinheiro</h3>
-        <p class="dica">Cada gasto separado. Lá embaixo, a soma de tudo.</p>
         <div id="para-onde"></div>
       </div>
 
@@ -303,14 +309,16 @@
 
       <div class="cartao">
         <h3>Cada espetinho: preço, custo e lucro</h3>
-        <p class="dica">Você pode mudar o <strong>custo</strong> aqui mesmo (quanto você gasta para fazer um).</p>
         <div id="espetinhos-contas"></div>
       </div>
 
+      <details class="ajustes" id="ajustes">
+        <summary>Ajustes</summary>
+        <div class="ajustes-corpo">
       <div class="duas-colunas">
         <div class="cartao">
           <h3>Dias e horário que a loja abre</h3>
-          <p class="dica">Marque os dias que você abre. Dia fechado não aparece como "R$ 0" nas contas.</p>
+          <p class="dica">Dia fechado não aparece como "R$ 0" nas contas.</p>
           <form id="form-funcionamento" novalidate>
             <div id="func-dias" class="func-dias"></div>
             <button type="submit" class="btn btn-secundario btn-largo">Salvar dias e horários</button>
@@ -319,15 +327,12 @@
 
         <div class="cartao cartao-copia">
           <h3>Cópia de segurança</h3>
-          <p class="so-local"><strong>Importante:</strong> tudo fica guardado <strong>só neste aparelho</strong>.
-            Se o celular quebrar, for trocado ou o navegador for limpo, os dados se perdem.
-            Baixe uma cópia toda semana e guarde num lugar seguro (Google Drive ou mande para você mesmo no WhatsApp).</p>
-          <p class="so-nuvem" hidden>Os dados ficam salvos na nuvem e aparecem em todos os celulares da loja.
-            A cópia é uma garantia a mais: baixe de vez em quando e guarde num lugar seguro.</p>
+          <p class="so-local dica">Os dados ficam só neste aparelho. Baixe uma cópia toda semana.</p>
+          <p class="so-nuvem dica" hidden>Os dados já ficam na nuvem. A cópia é uma garantia a mais.</p>
           <p id="ultima-copia" class="dica"></p>
           <div class="botoes-linha">
-            <button type="button" id="btn-baixar" class="btn btn-secundario">⬇️ Baixar cópia</button>
-            <button type="button" id="btn-restaurar" class="btn btn-leve">⬆️ Restaurar cópia</button>
+            <button type="button" id="btn-baixar" class="btn btn-secundario">Baixar cópia</button>
+            <button type="button" id="btn-restaurar" class="btn btn-leve">Restaurar cópia</button>
             <input type="file" id="arquivo-restaurar" accept="application/json,.json" hidden>
           </div>
         </div>
@@ -335,15 +340,17 @@
 
       <div class="duas-colunas">
         <div class="cartao" id="dica-instalar">
-          <h3>📲 Colocar na tela inicial</h3>
-          <p id="dica-instalar-texto" class="dica">No Android: abra no <strong>Chrome</strong>, toque nos <strong>3 pontinhos</strong> e em <strong>Instalar app</strong> (ou <strong>Adicionar à tela inicial</strong>). Fica com ícone igual de aplicativo.</p>
+          <h3>Colocar na tela inicial</h3>
+          <p id="dica-instalar-texto" class="dica">No Chrome: <strong>3 pontinhos</strong> → <strong>Instalar app</strong>.</p>
         </div>
         <div class="cartao so-nuvem" hidden>
           <h3>Conta da loja</h3>
-          <p class="dica">Este celular está conectado. Só saia se for entregar o celular para outra pessoa.</p>
+          <p class="dica">Só saia se for entregar o celular para outra pessoa.</p>
           <button type="button" id="btn-sair" class="btn btn-leve">Sair da conta neste celular</button>
         </div>
       </div>
+        </div>
+      </details>
     </section>
 
     <!-- ========== CARDÁPIO ========== -->
@@ -352,7 +359,6 @@
         <h2 id="t-cardapio" class="titulo-aba">Cardápio</h2>
         <button type="button" id="btn-novo-item" class="btn btn-primario">+ Novo espetinho</button>
       </div>
-      <p class="ajuda">Escreva o <strong>preço</strong> que você cobra e o <strong>custo</strong> (quanto gasta para fazer um). Salva sozinho e o lucro aparece na hora.</p>
       <ul id="cardapio-lista" class="lista-cartoes"></ul>
     </section>
 
@@ -362,11 +368,10 @@
         <h2 id="t-clientes" class="titulo-aba">Clientes</h2>
         <button type="button" id="btn-novo-cliente" class="btn btn-primario">+ Novo cliente</button>
       </div>
-      <p class="ajuda">Cadastre os clientes de entrega para achar o endereço rapidinho.</p>
       <label for="busca-cliente" class="sr-only">Buscar cliente</label>
-      <input id="busca-cliente" type="search" class="busca" placeholder="🔎 Procurar pelo nome, telefone ou rua" autocomplete="off">
+      <input id="busca-cliente" type="search" class="busca" placeholder="Procurar cliente" autocomplete="off">
       <ul id="clientes-lista" class="lista-cartoes"></ul>
-      <p class="nota">🔒 Guarde só o necessário para a entrega. <span class="so-local">Os dados ficam só neste aparelho.</span><span class="so-nuvem" hidden>Os dados ficam na nuvem da loja e só quem tem a senha vê.</span>
+      <p class="nota">Guarde só o necessário para a entrega. <span class="so-local">Os dados ficam só neste aparelho.</span><span class="so-nuvem" hidden>Os dados ficam na nuvem da loja e só quem tem a senha vê.</span>
         Se um cliente pedir para apagar o cadastro dele, use o botão <strong>Excluir</strong>. <a href="privacidade.html">Privacidade dos dados</a></p>
     </section>
 

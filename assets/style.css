@@ -737,3 +737,72 @@ body.sem-login { overflow: hidden; }
 .btn-olho[aria-pressed="true"] .olho-aberto { display: none; }
 .btn-olho[aria-pressed="true"] .olho-fechado { display: block; }
 .btn-olho[aria-pressed="true"] { color: var(--primaria-texto); }
+
+/* =====================================================================
+   Minimalista (pedido do Daniel): plano, sem brilho, ícones de linha
+   ===================================================================== */
+:root { --raio: 16px; --raio-m: 12px; --raio-p: 10px; --sombra: none; }
+body { background: var(--fundo); }
+
+/* Superfícies planas */
+.cartao, .lista-cartoes > li, .bloco-num, .item, .cartao-login, dialog {
+  background: var(--cartao); box-shadow: none;
+}
+.item.no-pedido { background: var(--primaria-fundo); }
+.bloco-num.destaque, .bloco-num.destaque.negativo { background: var(--cartao); }
+.bloco-num.destaque { border-color: var(--verde-borda); }
+.bloco-num.destaque.negativo { border-color: var(--vermelho-borda); }
+
+/* Sem brilho nos botões */
+.btn-primario, .seg[aria-pressed="true"], .chip[aria-pressed="true"], .aba-btn[aria-current="page"], .toast, .btn-topo { box-shadow: none; }
+.item:hover { transform: none; }
+
+/* Títulos de seção discretos (no lugar dos círculos numerados) */
+.passo {
+  font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--texto-suave); margin: 0 0 .5rem;
+}
+.grupo legend.passo { margin-bottom: .5rem; }
+.caixa-itens .passo { margin-top: .2rem; }
+
+/* Ícones de linha */
+.ic { width: 22px; height: 22px; flex-shrink: 0; }
+.seg { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem; font-size: .9rem; }
+.seg .ic { width: 22px; height: 22px; }
+
+/* Menu: ícone + nome, item ativo só com azul suave */
+.aba-btn { gap: .2rem; }
+.aba-btn .ic { width: 24px; height: 24px; }
+.aba-btn[aria-current="page"] { background: var(--primaria-fundo); color: var(--primaria-texto); }
+
+/* Resumo de hoje mais leve */
+.pilula { background: transparent; border-color: var(--borda-forte); color: var(--texto-suave); font-weight: 700; }
+.pilula:first-child { color: var(--texto); }
+
+/* Cabeçalho limpo */
+.topo { background: var(--fundo); backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+/* Status da nuvem: bolinha colorida + texto curto */
+.status-nuvem { background: transparent; border: 0; padding: 0; display: inline-flex; align-items: center; gap: .4rem; }
+.status-nuvem::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--texto-suave); }
+.status-nuvem.ok, .status-nuvem.offline, .status-nuvem.erro { background: transparent; border: 0; }
+.status-nuvem.ok::before { background: var(--verde); }
+.status-nuvem.offline::before { background: var(--amarelo); }
+.status-nuvem.erro::before { background: var(--vermelho); }
+
+/* Ajustes recolhidos */
+.ajustes { border: 1px solid var(--borda); border-radius: var(--raio); margin: .4rem 0 1rem; background: var(--cartao); }
+.ajustes > summary {
+  list-style: none; cursor: pointer; padding: .9rem 1.1rem; font-weight: 800;
+  display: flex; justify-content: space-between; align-items: center; min-height: 52px;
+}
+.ajustes > summary::-webkit-details-marker { display: none; }
+.ajustes > summary::after { content: "›"; font-size: 1.4rem; color: var(--texto-suave); transition: transform .25s var(--suave); }
+.ajustes[open] > summary::after { transform: rotate(90deg); }
+.ajustes-corpo { padding: 0 1rem 1rem; }
+.ajustes-corpo .cartao { background: var(--campo); }
+
+/* Entrega: linha discreta */
+.cliente-entrega { background: transparent; }
+.aviso { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .6rem .9rem; font-size: .9rem; border-radius: var(--raio-m); }
+.btn-link { background: none; border: 0; color: var(--primaria-texto); font-weight: 800; cursor: pointer; padding: .4rem .2rem; min-height: 40px; text-decoration: underline; text-underline-offset: 3px; }
