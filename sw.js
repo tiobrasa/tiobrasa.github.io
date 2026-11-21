@@ -2,7 +2,7 @@
    - Com internet: sempre pega a versão mais nova do sistema (atualiza sozinho para todos).
    - Sem internet: abre a última versão guardada no aparelho.
    Ao publicar mudanças grandes, aumente o número da VERSAO. */
-const VERSAO = 'tio-brasa-v5';
+const VERSAO = 'tio-brasa-v6';
 const ARQUIVOS = [
   './',
   'index.html',
@@ -12,8 +12,8 @@ const ARQUIVOS = [
   'assets/app.js',
   'assets/nuvem.js',
   'assets/nuvem-config.js',
-  'assets/icones/icone2-192.png',
-  'assets/icones/icone2-512.png'
+  'assets/icones/icone3-192.png',
+  'assets/icones/icone3-512.png'
 ];
 
 self.addEventListener('install', (e) => {
