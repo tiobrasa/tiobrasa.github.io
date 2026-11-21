@@ -1,4 +1,4 @@
-/* Nuvem do Tio Espeto (Firebase) — Brazuka Web
+/* Nuvem do Tio Brasa (Firebase) — Brazuka Web
    - Login único da loja (e-mail já preenchido; a equipe só digita a senha uma vez por celular).
    - Cada venda, gasto, cliente e espetinho vira um registro na nuvem. Mudança em um celular
      aparece nos outros em segundos. Sem internet, guarda no aparelho e envia quando voltar.
@@ -46,7 +46,7 @@ async function iniciarNuvem() {
     db = F.getFirestore(app);
   }
   const loja = window.NUVEM_LOJA || 'loja';
-  const chaveSync = (uid) => `tio-espeto-nuvem-sincronizado-${uid}`;
+  const chaveSync = (uid) => `tio-brasa-nuvem-sincronizado-${uid}`;
 
   /* ---------- Tela de entrar ---------- */
   const tela = document.getElementById('tela-login');

@@ -1,8 +1,8 @@
-/* Service worker do Tio Espeto — Brazuka Web
+/* Service worker do Tio Brasa — Brazuka Web
    - Com internet: sempre pega a versão mais nova do sistema (atualiza sozinho para todos).
    - Sem internet: abre a última versão guardada no aparelho.
    Ao publicar mudanças grandes, aumente o número da VERSAO. */
-const VERSAO = 'tio-espeto-v2';
+const VERSAO = 'tio-brasa-v3';
 const ARQUIVOS = [
   './',
   'index.html',

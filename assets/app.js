@@ -1,10 +1,10 @@
-/* Sistema da loja Tio Espeto — Brazuka Web
+/* Sistema da loja Tio Brasa — Brazuka Web
    Tudo fica salvo no próprio aparelho (localStorage).
    Valores em dinheiro são guardados em CENTAVOS (números inteiros) para não dar erro de arredondamento. */
 'use strict';
 
 const CONFIG = {
-  nomeLoja: 'Tio Espeto',
+  nomeLoja: 'Tio Brasa',
   chave: 'bispetinho-sistema-v1',
   diasLembreteCopia: 7
 };
@@ -1026,7 +1026,7 @@ function renderAvisoCopia() {
 }
 
 async function baixarCopia() {
-  const nome = `tio-espeto-copia-${hojeChave()}.json`;
+  const nome = `tio-brasa-copia-${hojeChave()}.json`;
   const conteudo = JSON.stringify(dados, null, 2);
   // Dentro da página do Claude o download passa pelo próprio Claude (ele pede para confirmar)
   const claudeDl = window.claude && window.claude.use ? await window.claude.use('downloads').catch(() => null) : null;

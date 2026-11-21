@@ -1,7 +1,7 @@
 {
-  "name": "Tio Espeto",
-  "short_name": "Tio Espeto",
-  "description": "Caixa, gastos e contas da loja Tio Espeto.",
+  "name": "Tio Brasa",
+  "short_name": "Tio Brasa",
+  "description": "Caixa, gastos e contas da loja Tio Brasa.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
