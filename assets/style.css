@@ -806,3 +806,17 @@ body { background: var(--fundo); }
 .cliente-entrega { background: transparent; }
 .aviso { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .6rem .9rem; font-size: .9rem; border-radius: var(--raio-m); }
 .btn-link { background: none; border: 0; color: var(--primaria-texto); font-weight: 800; cursor: pointer; padding: .4rem .2rem; min-height: 40px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Menu de baixo sem "quadradinhos": só ícone e nome; o ativo fica azul com um tracinho */
+@media (max-width: 1023px) {
+  .abas { background: var(--cartao); border: 1px solid var(--borda); padding: .2rem .3rem; }
+  .aba-btn, .aba-btn[aria-current="page"] { background: transparent; border-radius: 0; position: relative; }
+  .aba-btn { color: var(--texto-suave); font-weight: 700; }
+  .aba-btn[aria-current="page"] { color: var(--primaria-texto); }
+  .aba-btn[aria-current="page"]::after {
+    content: ""; position: absolute; bottom: .3rem; left: 50%; width: 18px; height: 3px;
+    border-radius: 3px; background: var(--primaria-texto); transform: translateX(-50%);
+  }
+  .aba-btn .ic { width: 24px; height: 24px; margin-bottom: .1rem; }
+  .aba-btn[aria-current="page"] .ic { stroke-width: 2.2; }
+}
