@@ -106,22 +106,34 @@ function abrirPergunta(texto, { campo, valor, sim }) {
   input.hidden = !campo;
   input.value = valor || '';
   $('#pergunta-sim').textContent = sim || 'Sim';
+  if (finalizarPergunta) finalizarPergunta(null); // fecha uma pergunta anterior que ficou aberta
   return new Promise((resolve) => {
-    let resposta = null;
-    const fim = () => {
-      dlg.removeEventListener('close', fim);
+    let feito = false;
+    // responde direto pelos botões (não depende do aviso de "fechou" do navegador, que às vezes não chega)
+    const terminar = (valor) => {
+      if (feito) return;
+      feito = true;
+      if (finalizarPergunta === terminar) finalizarPergunta = null;
       $('#form-pergunta').onsubmit = null;
-      resolve(resposta);
+      dlg.oncancel = null;
+      if (dlg.open) dlg.close();
+      resolve(valor);
     };
+    finalizarPergunta = terminar;
     $('#form-pergunta').onsubmit = (e) => {
       e.preventDefault();
-      resposta = campo ? input.value : true;
-      dlg.close();
+      terminar(campo ? input.value : true);
     };
-    dlg.addEventListener('close', fim);
+    dlg.oncancel = () => terminar(null); // tecla Esc
+    dlg.addEventListener('close', () => terminar(null), { once: true });
     dlg.showModal();
     (campo ? input : $('#pergunta-sim')).focus();
   });
+}
+let finalizarPergunta = null;
+function fecharDialogo(dl) {
+  if (dl && dl.id === 'dlg-pergunta' && finalizarPergunta) finalizarPergunta(null);
+  else if (dl) dl.close();
 }
 
 /* Redesenha uma parte da tela sem tirar o cursor do campo em que a pessoa estava */
@@ -1323,7 +1335,7 @@ function iniciar() {
     else if (d.excluirPerda) excluirPerda(d.excluirPerda);
     else if (d.desfazer) desfazerVenda(d.desfazer);
     else if (d.rolar) { const el = document.getElementById(d.rolar); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const c = el.querySelector('input'); if (c) c.focus({ preventScroll: true }); }
-    else if ('fechar' in d) t.closest('dialog').close();
+    else if ('fechar' in d) fecharDialogo(t.closest('dialog'));
   });
 
   // Campos editáveis direto na lista (nome, preço, custo)
@@ -1449,7 +1461,7 @@ function iniciar() {
   $('#cli-telefone').addEventListener('input', (e) => { e.target.value = mascaraTelefone(e.target.value); });
 
   // Fechar diálogo tocando fora
-  document.querySelectorAll('dialog').forEach((dlg) => dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }));
+  document.querySelectorAll('dialog').forEach((dlg) => dlg.addEventListener('click', (e) => { if (e.target === dlg) fecharDialogo(dlg); }));
 
   // Se os dados mudarem em outra aba do navegador, recarrega
   window.addEventListener('storage', (e) => {
