@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Nome da loja: Tio Espeto (também em CONFIG no assets/app.js). -->
+  <title>Tio Espeto · Caixa</title>
+  <link rel="icon" type="image/png" href="assets/icones/icone-192.png">
+  <!-- Para instalar como aplicativo (ícone na tela inicial) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icones/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Tio Espeto">
+  <!-- Fonte arredondada. Sem internet, o sistema usa a fonte normal do aparelho. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <h1 id="nome-loja">Tio Espeto</h1>
+    <div class="topo-direita">
+      <span id="status-nuvem" class="status-nuvem" role="status" hidden></span>
+      <button type="button" id="btn-instalar" class="btn-instalar" hidden>📲 Instalar</button>
+      <span class="topo-data" id="topo-data"></span>
+    </div>
+  </header>
+
+  <!-- Tela de entrar (só aparece quando a nuvem está ligada) -->
+  <div id="tela-login" class="tela-login" hidden>
+    <form id="form-login" class="cartao-login" novalidate>
+      <img src="assets/icones/icone-192.png" alt="" width="72" height="72">
+      <h2>Tio Espeto</h2>
+      <p class="dica">Digite a senha da loja. É só uma vez neste celular.</p>
+      <div class="campo">
+        <label for="login-email">E-mail da loja</label>
+        <input id="login-email" type="email" autocomplete="username" inputmode="email" required>
+      </div>
+      <div class="campo">
+        <label for="login-senha">Senha</label>
+        <input id="login-senha" type="password" autocomplete="current-password" required>
+      </div>
+      <p id="login-erro" class="erro" role="alert"></p>
+      <button type="submit" id="btn-entrar" class="btn btn-primario btn-grande">Entrar</button>
+      <p class="nota"><a href="privacidade.html">Privacidade dos dados</a></p>
+    </form>
+  </div>
+
+  <div id="aviso-armazenamento" class="aviso aviso-erro" hidden>
+    Este navegador não está deixando salvar os dados (talvez esteja em aba anônima).
+    As vendas vão sumir ao fechar. Abra o sistema numa aba normal.
+  </div>
+
+  <nav class="abas" aria-label="Seções">
+    <button type="button" class="aba-btn" data-aba="caixa"><span aria-hidden="true">🧾</span>Vender</button>
+    <button type="button" class="aba-btn" data-aba="gastos"><span aria-hidden="true">💸</span>Gastos</button>
+    <button type="button" class="aba-btn" data-aba="contas"><span aria-hidden="true">📊</span>Contas</button>
+    <button type="button" class="aba-btn" data-aba="cardapio"><span aria-hidden="true">🍢</span>Cardápio</button>
+    <button type="button" class="aba-btn" data-aba="clientes"><span aria-hidden="true">👥</span>Clientes</button>
+  </nav>
+
+  <main id="conteudo" tabindex="-1">
+
+    <!-- ========== CAIXA (VENDER) ========== -->
+    <section id="aba-caixa" class="aba" aria-labelledby="t-caixa">
+      <div class="cabeca-aba">
+        <h2 id="t-caixa" class="titulo-aba">Vender</h2>
+        <div id="hoje-resumo" class="hoje-resumo" aria-live="polite"></div>
+      </div>
+      <p id="hoje-status" class="dica"></p>
+      <div class="caixa-grade">
+        <div class="caixa-itens">
+          <h3 class="passo"><span class="passo-num" aria-hidden="true">1</span>Toque no espetinho que o cliente pediu</h3>
+          <p class="dica">Toque para pôr ou tirar. Mais de um: use <strong>+</strong> e <strong>−</strong> ou digite o número no pedido.</p>
+          <div id="itens-grade" class="itens-grade"></div>
+        </div>
+
+        <div class="caixa-pedido cartao">
+          <h3>Pedido</h3>
+          <ul id="pedido-lista" class="pedido-lista"></ul>
+          <p id="pedido-vazio" class="vazio">Nenhum espetinho no pedido.</p>
+
+          <div class="total-linha">
+            <span>Total</span>
+            <strong id="pedido-total">R$ 0,00</strong>
+          </div>
+
+          <fieldset class="grupo">
+            <legend class="passo"><span class="passo-num" aria-hidden="true">2</span>Como o cliente pagou?</legend>
+            <div class="segmentos" id="formas">
+              <button type="button" class="seg" data-forma="dinheiro" aria-pressed="true">💵<br>Dinheiro</button>
+              <button type="button" class="seg" data-forma="pix" aria-pressed="false">📱<br>Pix</button>
+              <button type="button" class="seg" data-forma="cartao" aria-pressed="false">💳<br>Cartão</button>
+            </div>
+          </fieldset>
+
+          <div id="bloco-dinheiro">
+            <label for="pago" class="rotulo">Quanto o cliente deu?</label>
+            <div class="campo-dinheiro">
+              <span aria-hidden="true">R$</span>
+              <input id="pago" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00">
+            </div>
+            <div class="atalhos" id="atalhos" aria-label="Atalhos de valor">
+              <button type="button" class="atalho" data-valor="exato">Valor certo</button>
+              <button type="button" class="atalho" data-valor="1000">R$ 10</button>
+              <button type="button" class="atalho" data-valor="2000">R$ 20</button>
+              <button type="button" class="atalho" data-valor="5000">R$ 50</button>
+              <button type="button" class="atalho" data-valor="10000">R$ 100</button>
+            </div>
+            <div id="troco" class="troco" aria-live="polite"></div>
+          </div>
+
+          <details class="grupo cliente-entrega">
+            <summary>🛵 É entrega? Escolher cliente <span class="opcional">(se não for, pule)</span></summary>
+            <label for="venda-cliente" class="sr-only">Cliente da entrega</label>
+            <select id="venda-cliente"></select>
+            <div id="venda-cliente-info" class="cliente-info" hidden></div>
+          </details>
+
+          <h3 class="passo passo-final"><span class="passo-num" aria-hidden="true">3</span>Confirme a venda</h3>
+          <button type="button" id="btn-confirmar" class="btn btn-primario btn-grande">✔ Confirmar venda</button>
+          <button type="button" id="btn-limpar" class="btn btn-leve">Começar de novo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== GASTOS ========== -->
+    <section id="aba-gastos" class="aba" aria-labelledby="t-gastos" hidden>
+      <div class="cabeca-aba">
+        <h2 id="t-gastos" class="titulo-aba">Gastos</h2>
+      </div>
+      <p class="ajuda">Anote aqui tudo que você compra para a loja. Cada coisa fica separada, para você ver quanto gasta com cada uma.</p>
+
+      <div class="duas-colunas">
+        <div class="cartao">
+          <h3>Anotar um gasto</h3>
+          <form id="form-gasto" novalidate>
+            <fieldset class="grupo grupo-topo">
+              <legend class="passo"><span class="passo-num" aria-hidden="true">1</span>O que você comprou?</legend>
+              <div id="tipos-chips" class="chips"></div>
+              <div id="novo-tipo-box" class="novo-tipo" hidden>
+                <label for="novo-tipo" class="sr-only">Nome do novo tipo de gasto</label>
+                <input id="novo-tipo" type="text" maxlength="40" placeholder="Escreva aqui. Ex.: gás" autocomplete="off">
+                <button type="button" id="btn-add-tipo" class="btn btn-secundario">Criar</button>
+              </div>
+            </fieldset>
+            <p class="passo"><span class="passo-num" aria-hidden="true">2</span>Quanto custou e quando?</p>
+            <div class="campo-dupla">
+              <div class="campo">
+                <label for="gasto-valor">Valor (R$)</label>
+                <input id="gasto-valor" type="text" inputmode="decimal" placeholder="0,00" required>
+              </div>
+              <div class="campo">
+                <label for="gasto-data">Dia</label>
+                <input id="gasto-data" type="date" required>
+              </div>
+            </div>
+            <div class="campo">
+              <label for="gasto-obs">Anotação <span class="opcional">(se quiser)</span></label>
+              <input id="gasto-obs" type="text" maxlength="80" placeholder="Ex.: 2 sacos de 5 kg">
+            </div>
+            <p id="gasto-erro" class="erro" role="alert"></p>
+            <p class="passo"><span class="passo-num" aria-hidden="true">3</span>Salve</p>
+            <button type="submit" class="btn btn-primario btn-largo btn-grande">✔ Salvar gasto</button>
+          </form>
+        </div>
+
+        <div class="cartao">
+          <h3>Espetinho perdido</h3>
+          <p class="dica">Estragou, caiu ou foi jogado fora? Anote aqui. Entra nas contas pelo custo dele.</p>
+          <form id="form-perda" novalidate>
+            <div class="campo">
+              <label for="perda-item">Qual espetinho?</label>
+              <select id="perda-item"></select>
+            </div>
+            <div class="campo-dupla">
+              <div class="campo">
+                <label for="perda-qtd">Quantos?</label>
+                <input id="perda-qtd" type="number" inputmode="numeric" min="1" step="1" value="1">
+              </div>
+              <div class="campo">
+                <label for="perda-data">Dia</label>
+                <input id="perda-data" type="date" required>
+              </div>
+            </div>
+            <div class="campo">
+              <label for="perda-obs">O que aconteceu? <span class="opcional">(se quiser)</span></label>
+              <input id="perda-obs" type="text" maxlength="80" placeholder="Ex.: estragou, caiu no chão">
+            </div>
+            <p id="perda-valor" class="dica"></p>
+            <p id="perda-erro" class="erro" role="alert"></p>
+            <button type="submit" class="btn btn-secundario btn-largo">Salvar perda</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="cartao">
+        <div class="cabeca-cartao">
+          <h3>Quanto gastou com cada coisa</h3>
+          <label class="sr-only" for="periodo-gastos">Período dos gastos</label>
+          <select id="periodo-gastos" class="periodo">
+            <option value="hoje">Hoje</option>
+            <option value="ontem">Ontem</option>
+            <option value="semana">Últimos 7 dias</option>
+            <option value="mes" selected>Este mês</option>
+            <option value="mespassado">Mês passado</option>
+            <option value="tudo">Tudo</option>
+          </select>
+        </div>
+        <p class="dica">Toque em cada item para ver os gastos dele, um por um.</p>
+        <div id="gastos-grupos" class="gastos-grupos"></div>
+      </div>
+
+      <div class="cartao">
+        <h3>Suas coisas de gasto</h3>
+        <p class="dica">Você pode trocar o nome ou apagar. Os gastos que já foram anotados continuam guardados.</p>
+        <ul id="tipos-lista" class="lista-simples"></ul>
+      </div>
+    </section>
+
+    <!-- ========== CONTAS ========== -->
+    <section id="aba-contas" class="aba" aria-labelledby="t-contas" hidden>
+      <div class="cabeca-aba">
+        <h2 id="t-contas" class="titulo-aba">Contas</h2>
+        <label class="sr-only" for="periodo">Período</label>
+        <select id="periodo" class="periodo">
+          <option value="hoje">Hoje</option>
+          <option value="ontem">Ontem</option>
+          <option value="semana">Últimos 7 dias</option>
+          <option value="mes" selected>Este mês</option>
+          <option value="mespassado">Mês passado</option>
+          <option value="tudo">Tudo</option>
+        </select>
+      </div>
+      <p class="ajuda">Aqui você vê quanto entrou, quanto saiu e quanto sobrou. Escolha o período no botão acima.</p>
+
+      <div id="aviso-copia" class="aviso" hidden></div>
+      <div id="aviso-funcionamento" class="aviso" hidden></div>
+
+      <div class="resumo" id="resumo"></div>
+
+      <div class="cartao">
+        <h3>Para onde foi o dinheiro</h3>
+        <p class="dica">Cada gasto separado. Lá embaixo, a soma de tudo.</p>
+        <div id="para-onde"></div>
+      </div>
+
+      <div class="cartao">
+        <h3>Dia a dia</h3>
+        <div id="dias"></div>
+      </div>
+
+      <div class="duas-colunas">
+        <div class="cartao">
+          <h3>Como os clientes pagaram</h3>
+          <div id="por-forma"></div>
+        </div>
+        <div class="cartao">
+          <h3>Vendas</h3>
+          <ul id="vendas-lista" class="lista-simples lista-rolavel"></ul>
+        </div>
+      </div>
+
+      <div class="cartao">
+        <h3>Cada espetinho: preço, custo e lucro</h3>
+        <p class="dica">Você pode mudar o <strong>custo</strong> aqui mesmo (quanto você gasta para fazer um).</p>
+        <div id="espetinhos-contas"></div>
+      </div>
+
+      <div class="duas-colunas">
+        <div class="cartao">
+          <h3>Dias e horário que a loja abre</h3>
+          <p class="dica">Marque os dias que você abre. Dia fechado não aparece como "R$ 0" nas contas.</p>
+          <form id="form-funcionamento" novalidate>
+            <div id="func-dias" class="func-dias"></div>
+            <button type="submit" class="btn btn-secundario btn-largo">Salvar dias e horários</button>
+          </form>
+        </div>
+
+        <div class="cartao cartao-copia">
+          <h3>Cópia de segurança</h3>
+          <p class="so-local"><strong>Importante:</strong> tudo fica guardado <strong>só neste aparelho</strong>.
+            Se o celular quebrar, for trocado ou o navegador for limpo, os dados se perdem.
+            Baixe uma cópia toda semana e guarde num lugar seguro (Google Drive ou mande para você mesmo no WhatsApp).</p>
+          <p class="so-nuvem" hidden>Os dados ficam salvos na nuvem e aparecem em todos os celulares da loja.
+            A cópia é uma garantia a mais: baixe de vez em quando e guarde num lugar seguro.</p>
+          <p id="ultima-copia" class="dica"></p>
+          <div class="botoes-linha">
+            <button type="button" id="btn-baixar" class="btn btn-secundario">⬇️ Baixar cópia</button>
+            <button type="button" id="btn-restaurar" class="btn btn-leve">⬆️ Restaurar cópia</button>
+            <input type="file" id="arquivo-restaurar" accept="application/json,.json" hidden>
+          </div>
+        </div>
+      </div>
+
+      <div class="duas-colunas">
+        <div class="cartao" id="dica-instalar">
+          <h3>📲 Colocar na tela inicial</h3>
+          <p id="dica-instalar-texto" class="dica">No Android: abra no <strong>Chrome</strong>, toque nos <strong>3 pontinhos</strong> e em <strong>Instalar app</strong> (ou <strong>Adicionar à tela inicial</strong>). Fica com ícone igual de aplicativo.</p>
+        </div>
+        <div class="cartao so-nuvem" hidden>
+          <h3>Conta da loja</h3>
+          <p class="dica">Este celular está conectado. Só saia se for entregar o celular para outra pessoa.</p>
+          <button type="button" id="btn-sair" class="btn btn-leve">Sair da conta neste celular</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CARDÁPIO ========== -->
+    <section id="aba-cardapio" class="aba" aria-labelledby="t-cardapio" hidden>
+      <div class="cabeca-aba">
+        <h2 id="t-cardapio" class="titulo-aba">Cardápio</h2>
+        <button type="button" id="btn-novo-item" class="btn btn-primario">+ Novo espetinho</button>
+      </div>
+      <p class="ajuda">Escreva o <strong>preço</strong> que você cobra e o <strong>custo</strong> (quanto gasta para fazer um). Salva sozinho e o lucro aparece na hora.</p>
+      <ul id="cardapio-lista" class="lista-cartoes"></ul>
+    </section>
+
+    <!-- ========== CLIENTES ========== -->
+    <section id="aba-clientes" class="aba" aria-labelledby="t-clientes" hidden>
+      <div class="cabeca-aba">
+        <h2 id="t-clientes" class="titulo-aba">Clientes</h2>
+        <button type="button" id="btn-novo-cliente" class="btn btn-primario">+ Novo cliente</button>
+      </div>
+      <p class="ajuda">Cadastre os clientes de entrega para achar o endereço rapidinho.</p>
+      <label for="busca-cliente" class="sr-only">Buscar cliente</label>
+      <input id="busca-cliente" type="search" class="busca" placeholder="🔎 Procurar pelo nome, telefone ou rua" autocomplete="off">
+      <ul id="clientes-lista" class="lista-cartoes"></ul>
+      <p class="nota">🔒 Guarde só o necessário para a entrega. <span class="so-local">Os dados ficam só neste aparelho.</span><span class="so-nuvem" hidden>Os dados ficam na nuvem da loja e só quem tem a senha vê.</span>
+        Se um cliente pedir para apagar o cadastro dele, use o botão <strong>Excluir</strong>. <a href="privacidade.html">Privacidade dos dados</a></p>
+    </section>
+
+    <footer class="rodape">
+      <a href="https://brazukaweb.github.io" target="_blank" rel="noopener">Site feito por Brazuka Web</a>
+    </footer>
+  </main>
+
+  <button type="button" id="btn-topo" class="btn-topo" aria-label="Voltar para o topo da página">↑</button>
+
+  <!-- Formulário de cliente -->
+  <dialog id="dlg-cliente" aria-labelledby="dlg-cliente-titulo">
+    <form id="form-cliente" novalidate>
+      <h2 id="dlg-cliente-titulo">Novo cliente</h2>
+      <div class="campo">
+        <label for="cli-nome">Nome *</label>
+        <input id="cli-nome" type="text" maxlength="80" required autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="cli-telefone">Telefone / WhatsApp</label>
+        <input id="cli-telefone" type="tel" inputmode="numeric" placeholder="(00) 00000-0000" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="cli-endereco">Endereço completo</label>
+        <textarea id="cli-endereco" rows="2" maxlength="200" placeholder="Rua, número, bairro, complemento"></textarea>
+      </div>
+      <div class="campo">
+        <label for="cli-referencia">Ponto de referência</label>
+        <input id="cli-referencia" type="text" maxlength="120" placeholder="Ex.: casa azul ao lado da padaria">
+      </div>
+      <div class="campo">
+        <label for="cli-obs">Observações</label>
+        <textarea id="cli-obs" rows="2" maxlength="200" placeholder="Ex.: interfone quebrado, ligar ao chegar"></textarea>
+      </div>
+      <div class="campo">
+        <label for="cli-cpf">CPF <span class="opcional">(se quiser)</span></label>
+        <input id="cli-cpf" type="text" inputmode="numeric" placeholder="000.000.000-00" autocomplete="off">
+      </div>
+      <p id="cli-erro" class="erro" role="alert"></p>
+      <div class="botoes-dialogo">
+        <button type="button" class="btn btn-leve" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-primario">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Formulário de novo espetinho -->
+  <dialog id="dlg-item" aria-labelledby="dlg-item-titulo">
+    <form id="form-item" novalidate>
+      <h2 id="dlg-item-titulo">Novo espetinho</h2>
+      <div class="campo">
+        <label for="item-nome">Nome *</label>
+        <input id="item-nome" type="text" maxlength="60" required autocomplete="off" placeholder="Ex.: Espetinho de frango">
+      </div>
+      <div class="campo-dupla">
+        <div class="campo">
+          <label for="item-preco">Preço (R$) *</label>
+          <input id="item-preco" type="text" inputmode="decimal" placeholder="0,00" required>
+        </div>
+        <div class="campo">
+          <label for="item-custo">Custo (R$)</label>
+          <input id="item-custo" type="text" inputmode="decimal" placeholder="0,00">
+        </div>
+      </div>
+      <p id="item-lucro" class="dica"></p>
+      <p id="item-erro" class="erro" role="alert"></p>
+      <div class="botoes-dialogo">
+        <button type="button" class="btn btn-leve" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-primario">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Pergunta de confirmação (substitui as caixinhas do navegador) -->
+  <dialog id="dlg-pergunta" class="dlg-pergunta" aria-labelledby="pergunta-texto">
+    <form id="form-pergunta" novalidate>
+      <h2 id="pergunta-texto"></h2>
+      <p id="pergunta-detalhe" class="dica"></p>
+      <label for="pergunta-campo" class="sr-only">Texto</label>
+      <input id="pergunta-campo" type="text" maxlength="40" autocomplete="off" hidden>
+      <div class="botoes-dialogo">
+        <button type="button" class="btn btn-leve" data-fechar>Cancelar</button>
+        <button type="submit" id="pergunta-sim" class="btn btn-primario">Sim</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/nuvem-config.js"></script>
+  <script src="assets/app.js"></script>
+  <script type="module" src="assets/nuvem.js"></script>
+</body>
+</html>
