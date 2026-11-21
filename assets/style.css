@@ -814,7 +814,7 @@ body { background: var(--fundo); }
   .aba-btn { color: var(--texto-suave); font-weight: 700; }
   .aba-btn[aria-current="page"] { color: var(--primaria-texto); }
   .aba-btn[aria-current="page"]::after {
-    content: ""; position: absolute; bottom: .3rem; left: 50%; width: 18px; height: 3px;
+    content: ""; position: absolute; bottom: 1px; left: 50%; width: 18px; height: 3px;
     border-radius: 3px; background: var(--primaria-texto); transform: translateX(-50%);
   }
   .aba-btn .ic { width: 24px; height: 24px; margin-bottom: .1rem; }
