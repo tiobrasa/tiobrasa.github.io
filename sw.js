@@ -2,7 +2,7 @@
    - Com internet: sempre pega a versão mais nova do sistema (atualiza sozinho para todos).
    - Sem internet: abre a última versão guardada no aparelho.
    Ao publicar mudanças grandes, aumente o número da VERSAO. */
-const VERSAO = 'tio-espeto-v1';
+const VERSAO = 'tio-espeto-v2';
 const ARQUIVOS = [
   './',
   'index.html',
@@ -33,7 +33,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return; // nuvem e fontes: direto
   // primeiro tenta a internet (versão nova); se falhar, usa a cópia guardada
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' }) // sempre confere no servidor se tem versão nova
       .then((resp) => {
         if (resp && resp.ok) {
           const copia = resp.clone();
