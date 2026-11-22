@@ -184,15 +184,11 @@
         <div class="cartao">
           <h3>Novo gasto</h3>
           <form id="form-gasto" novalidate>
-            <fieldset class="grupo grupo-topo">
-              <legend class="passo">Tipo de gasto</legend>
-              <div id="tipos-chips" class="chips"></div>
-              <div id="novo-tipo-box" class="novo-tipo" hidden>
-                <label for="novo-tipo" class="sr-only">Nome do novo tipo de gasto</label>
-                <input id="novo-tipo" type="text" maxlength="40" placeholder="Escreva aqui. Ex.: gás" autocomplete="off">
-                <button type="button" id="btn-add-tipo" class="btn btn-secundario">Criar</button>
-              </div>
-            </fieldset>
+            <div class="campo">
+              <label for="gasto-nome">O que foi?</label>
+              <input id="gasto-nome" type="text" maxlength="40" placeholder="Ex.: carvão" autocomplete="off" list="gasto-sugestoes" required>
+              <datalist id="gasto-sugestoes"></datalist>
+            </div>
             <div class="campo-dupla">
               <div class="campo">
                 <label for="gasto-valor">Valor (R$)</label>
@@ -205,8 +201,12 @@
             </div>
             <div class="campo">
               <label for="gasto-obs">Anotação <span class="opcional">(se quiser)</span></label>
-              <input id="gasto-obs" type="text" maxlength="80" placeholder="Ex.: 2 sacos de 5 kg">
+              <input id="gasto-obs" type="text" maxlength="80" placeholder="Ex.: saco de 14 kg">
             </div>
+            <label class="check-dura">
+              <input id="gasto-dura" type="checkbox">
+              <span><strong>Dura vários dias</strong><small>Ex.: carvão, gás. O valor é dividido pelos dias de uso até você marcar que acabou.</small></span>
+            </label>
             <p id="gasto-erro" class="erro" role="alert"></p>
             <button type="submit" class="btn btn-primario btn-largo btn-grande">Salvar gasto</button>
           </form>
@@ -243,7 +243,7 @@
 
       <div class="cartao">
         <div class="cabeca-cartao">
-          <h3>Gastos por tipo</h3>
+          <h3>Gastos</h3>
           <label class="sr-only" for="periodo-gastos">Período dos gastos</label>
           <select id="periodo-gastos" class="periodo">
             <option value="hoje">Hoje</option>
@@ -256,14 +256,6 @@
         </div>
         <div id="gastos-grupos" class="gastos-grupos"></div>
       </div>
-
-      <details class="ajustes">
-        <summary>Editar tipos de gasto</summary>
-        <div class="ajustes-corpo">
-          <p class="dica">Trocar o nome ou apagar não muda os gastos já anotados.</p>
-          <ul id="tipos-lista" class="lista-simples"></ul>
-        </div>
-      </details>
     </section>
 
     <!-- ========== CONTAS ========== -->

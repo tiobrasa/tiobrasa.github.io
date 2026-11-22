@@ -820,3 +820,15 @@ body { background: var(--fundo); }
   .aba-btn .ic { width: 24px; height: 24px; margin-bottom: .1rem; }
   .aba-btn[aria-current="page"] .ic { stroke-width: 2.2; }
 }
+
+/* ===== Gasto que dura vários dias ===== */
+.check-dura { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .8rem; margin: .2rem 0 .6rem; border: 1px solid var(--borda-forte); border-radius: 12px; cursor: pointer; }
+.check-dura input { width: 1.25rem; height: 1.25rem; margin: .1rem 0 0; flex: none; accent-color: var(--primaria); }
+.check-dura span { display: flex; flex-direction: column; gap: .15rem; }
+.check-dura small { color: var(--texto-suave); font-size: .82rem; line-height: 1.35; }
+.check-dura:has(input:checked) { border-color: var(--primaria-borda); background: var(--primaria-fundo); }
+.em-uso { margin-bottom: .9rem; }
+.em-uso ul { list-style: none; margin: .3rem 0 0; padding: 0; display: grid; gap: .45rem; }
+.em-uso li { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .6rem .75rem; border: 1px solid var(--primaria-borda); border-radius: 12px; background: var(--primaria-fundo); }
+.em-uso .mini, .grupo-gasto .mini { color: var(--texto-suave); font-size: .8rem; margin: .15rem 0 0; }
+.grupo-gasto .botoes-linha { margin-top: .35rem; }

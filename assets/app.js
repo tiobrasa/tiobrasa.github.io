@@ -336,6 +336,46 @@ const noPeriodo = (data, [a, b]) => { const d = new Date(data); return d >= a &&
 const diaNoPeriodo = (k, faixa) => noPeriodo(dataDeChave(k), faixa);
 const valorPerda = (p) => (p.custo == null ? 0 : p.custo * p.qtd);
 
+/* ---------- Gasto que dura vários dias (carvão, gás…) ----------
+   O valor é dividido pelos dias de uso (dias que a loja abre ou que teve venda),
+   do dia da compra até o dia que acabou. Enquanto está em uso: se já tem histórico
+   ("costuma durar 5 dias"), cada dia conta valor ÷ 5; sem histórico, divide pelos dias até hoje. */
+const nomeGasto = (g) => g.tipoNome || 'Gasto';
+const chaveNome = (n) => semAcento(String(n || '').trim());
+const diaAntes = (k) => { const d = dataDeChave(k); d.setDate(d.getDate() - 1); return chaveDia(d); };
+let diasComVenda = null; // cache por desenho de tela
+function diasDeUso(ini, fim) {
+  if (!diasComVenda) diasComVenda = new Set(dados.vendas.map((v) => chaveDia(v.data)));
+  const f = dados.funcionamento;
+  const lista = [];
+  const ult = dataDeChave(fim);
+  for (const d = dataDeChave(ini); d <= ult; d.setDate(d.getDate() + 1)) {
+    const k = chaveDia(d);
+    if (!f.configurado || f.dias[d.getDay()].abre || diasComVenda.has(k)) lista.push(k);
+  }
+  return lista.length ? lista : [ini];
+}
+function duracaoMedia(nome, exceto) {
+  const fechados = dados.gastos.filter((g) => g.dura && g.acabou && g.id !== exceto && chaveNome(nomeGasto(g)) === chaveNome(nome));
+  if (!fechados.length) return 0;
+  return Math.round(fechados.reduce((s, g) => s + diasDeUso(g.dia, g.acabou).length, 0) / fechados.length);
+}
+function infoUso(g) {
+  const hoje = hojeChave();
+  const dias = diasDeUso(g.dia, g.acabou || (hoje > g.dia ? hoje : g.dia));
+  const media = g.acabou ? 0 : duracaoMedia(nomeGasto(g), g.id);
+  const divisor = g.acabou ? dias.length : Math.max(dias.length, media || dias.length);
+  return { dias, media, divisor, porDia: Math.round(g.valor / divisor) };
+}
+/* Quanto do gasto entra em cada dia: [[dia, centavos], …] */
+function parcelasGasto(g) {
+  if (!g.dura) return [[g.dia, g.valor]];
+  const { dias, divisor } = infoUso(g);
+  const base = Math.floor(g.valor / divisor);
+  let resto = g.valor - base * divisor;
+  return dias.map((k) => { let v = base; if (resto > 0) { v++; resto--; } return [k, v]; });
+}
+
 /* Junta tudo que aconteceu em cada dia do período */
 function movimentoPorDia(faixa) {
   const mapa = new Map();
@@ -354,7 +394,7 @@ function movimentoPorDia(faixa) {
       else r.custo += it.custo * it.qtd;
     });
   });
-  dados.gastos.forEach((g) => { if (diaNoPeriodo(g.dia, faixa)) dia(g.dia).gastos += g.valor; });
+  dados.gastos.forEach((g) => parcelasGasto(g).forEach(([k, v]) => { if (diaNoPeriodo(k, faixa)) dia(k).gastos += v; }));
   dados.perdas.forEach((p) => { if (diaNoPeriodo(p.dia, faixa)) dia(p.dia).perdas += valorPerda(p); });
   mapa.forEach((r) => { r.resultado = r.entradas - r.custo - r.gastos - r.perdas; });
   return mapa;
@@ -664,60 +704,82 @@ function setForma(f) {
 }
 
 /* ================= GASTOS ================= */
-let tipoSelecionado = null;
-
 function renderGastos() {
-  renderChipsTipos();
+  diasComVenda = null;
+  renderSugestoesGasto();
   renderSelectPerda();
   renderListaGastos();
-  renderTiposLista();
 }
 
-function renderChipsTipos() {
-  if (!dados.tiposGasto.some((t) => t.id === tipoSelecionado)) tipoSelecionado = null;
-  const chips = dados.tiposGasto
-    .slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-    .map((t) => `<button type="button" class="chip" data-tipo="${t.id}" aria-pressed="${t.id === tipoSelecionado}">${esc(t.nome)}</button>`)
-    .join('');
-  $('#tipos-chips').innerHTML = chips +
-    `<button type="button" class="chip chip-novo" data-novo-tipo>+ Novo tipo</button>` +
-    (dados.tiposGasto.length ? '' : '<p class="dica" style="width:100%;margin:.2rem 0 0">Crie seus tipos de gasto do seu jeito, por exemplo: gás, carvão, tempero, carne, embalagem…</p>');
+/* Sugestões do que já foi anotado antes (o mais recente primeiro). Nada é fixo. */
+function nomesUsados() {
+  const vistos = new Map();
+  dados.gastos.slice().sort((a, b) => (b.dia + (b.criadoEm || '')).localeCompare(a.dia + (a.criadoEm || '')))
+    .forEach((g) => { const k = chaveNome(nomeGasto(g)); if (!vistos.has(k)) vistos.set(k, g); });
+  return vistos;
 }
-
-function criarTipo() {
-  const nome = $('#novo-tipo').value.trim().replace(/\s+/g, ' ');
-  if (!nome) { $('#novo-tipo').focus(); return; }
-  let t = dados.tiposGasto.find((x) => semAcento(x.nome) === semAcento(nome));
-  if (!t) {
-    t = { id: uid(), nome: nome.charAt(0).toUpperCase() + nome.slice(1) };
-    dados.tiposGasto.push(t);
-    salvar();
-    toast(`Tipo "${t.nome}" criado.`);
-  }
-  tipoSelecionado = t.id;
-  $('#novo-tipo').value = '';
-  $('#novo-tipo-box').hidden = true;
-  renderChipsTipos();
-  renderTiposLista();
-  $('#gasto-valor').focus();
+function renderSugestoesGasto() {
+  $('#gasto-sugestoes').innerHTML = [...nomesUsados().values()].slice(0, 30)
+    .map((g) => `<option value="${esc(nomeGasto(g))}"></option>`).join('');
+}
+function aoDigitarNomeGasto() {
+  const g = nomesUsados().get(chaveNome($('#gasto-nome').value));
+  if (g) $('#gasto-dura').checked = !!g.dura; // se da última vez durou vários dias, já marca
 }
 
 function lancarGasto(e) {
   e.preventDefault();
   const erro = $('#gasto-erro');
-  const tipo = dados.tiposGasto.find((t) => t.id === tipoSelecionado);
+  let nome = $('#gasto-nome').value.trim().replace(/\s+/g, ' ');
   const valor = paraCentavos($('#gasto-valor').value);
   const dia = $('#gasto-data').value || hojeChave();
-  if (!tipo) { erro.textContent = 'Escolha o tipo de gasto (ou crie um em "+ Novo tipo").'; return; }
+  const dura = $('#gasto-dura').checked;
+  if (!nome) { erro.textContent = 'Escreva o que foi (ex.: carvão).'; $('#gasto-nome').focus(); return; }
   if (!valorOk(valor) || valor <= 0) { erro.textContent = 'Coloque o valor do gasto (ex.: 35,90).'; $('#gasto-valor').focus(); return; }
   erro.textContent = '';
-  dados.gastos.push({ id: uid(), tipoId: tipo.id, tipoNome: tipo.nome, obs: $('#gasto-obs').value.trim(), valor, dia, criadoEm: new Date().toISOString() });
+  const igual = nomesUsados().get(chaveNome(nome));
+  nome = igual ? nomeGasto(igual) : nome.charAt(0).toUpperCase() + nome.slice(1);
+
+  // comprou de novo algo que ainda estava "em uso": o anterior acabou no dia antes desta compra
+  let fechou = 0;
+  if (dura) {
+    dados.gastos.forEach((g) => {
+      if (g.dura && !g.acabou && chaveNome(nomeGasto(g)) === chaveNome(nome) && g.dia <= dia) {
+        const dias = g.dia < dia ? diasDeUso(g.dia, diaAntes(dia)) : [g.dia];
+        g.acabou = dias[dias.length - 1];
+        fechou++;
+      }
+    });
+  }
+  dados.gastos.push({ id: uid(), tipoNome: nome, obs: $('#gasto-obs').value.trim(), valor, dia, dura, acabou: null, criadoEm: new Date().toISOString() });
   salvar();
+  $('#gasto-nome').value = '';
   $('#gasto-valor').value = '';
   $('#gasto-obs').value = '';
-  tipoSelecionado = null;
+  $('#gasto-dura').checked = false;
   renderGastos();
-  toast(`Gasto de ${fmt(valor)} com ${tipo.nome} lançado.`);
+  toast(fechou ? `${nome} novo anotado. O anterior foi marcado como acabado.` : `Gasto de ${fmt(valor)} com ${nome} anotado.`);
+}
+
+async function marcarAcabou(id) {
+  const g = dados.gastos.find((x) => x.id === id);
+  if (!g) return;
+  const hoje = hojeChave();
+  if (!(await perguntar(`${nomeGasto(g)} acabou hoje?\n\nO valor de ${fmt(g.valor)} fica dividido pelos dias que ele foi usado.`))) return;
+  g.acabou = hoje < g.dia ? g.dia : hoje;
+  salvar();
+  renderAbaAtual();
+  const n = diasDeUso(g.dia, g.acabou).length;
+  toast(`Durou ${plural(n, 'dia', 'dias')}: ${fmt(Math.round(g.valor / n))} por dia.`);
+}
+
+function desfazerAcabou(id) {
+  const g = dados.gastos.find((x) => x.id === id);
+  if (!g) return;
+  g.acabou = null;
+  salvar();
+  renderAbaAtual();
+  toast(`${nomeGasto(g)} voltou para "em uso".`);
 }
 
 function renderSelectPerda() {
@@ -763,87 +825,72 @@ function registrarPerda(e) {
 const gruposAbertos = new Set();
 const dataBR = (k) => dataDeChave(k).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '');
 
+function textoUso(g) {
+  const u = infoUso(g);
+  if (g.acabou) return `durou ${plural(u.dias.length, 'dia', 'dias')} · ${fmt(u.porDia)} por dia`;
+  return `em uso, ${u.dias.length}º dia${u.media ? ` (costuma durar ${u.media})` : ''} · ${fmt(u.porDia)} por dia`;
+}
+
 function renderListaGastos() {
   const faixa = intervaloPeriodo($('#periodo-gastos').value);
-  const gastos = dados.gastos.filter((g) => diaNoPeriodo(g.dia, faixa));
   const perdas = dados.perdas.filter((p) => diaNoPeriodo(p.dia, faixa));
 
   const grupos = new Map();
-  gastos.forEach((g) => {
-    const k = 'tipo-' + (g.tipoId || g.tipoNome);
-    if (!grupos.has(k)) grupos.set(k, { chave: k, nome: g.tipoNome, total: 0, itens: [] });
+  dados.gastos.forEach((g) => {
+    // quanto deste gasto conta no período (gasto de vários dias entra só a parte dos dias do período)
+    const conta = parcelasGasto(g).reduce((s, [k, v]) => s + (diaNoPeriodo(k, faixa) ? v : 0), 0);
+    if (!conta && !diaNoPeriodo(g.dia, faixa)) return;
+    const k = 'nome-' + chaveNome(nomeGasto(g));
+    if (!grupos.has(k)) grupos.set(k, { chave: k, nome: nomeGasto(g), total: 0, itens: [] });
     const gr = grupos.get(k);
-    gr.nome = g.tipoNome;
-    gr.total += g.valor;
-    gr.itens.push({ dia: g.dia, criado: g.criadoEm || '', valor: g.valor, texto: g.obs || '', excluir: `data-excluir-gasto="${g.id}"` });
+    gr.total += conta;
+    const extra = g.dura
+      ? `<p class="mini">${textoUso(g)}</p><div class="botoes-linha">${g.acabou
+        ? `<button type="button" class="btn btn-leve btn-pequeno" data-desfazer-acabou="${g.id}">Ainda não acabou</button>`
+        : `<button type="button" class="btn btn-secundario btn-pequeno" data-acabou="${g.id}">Acabou</button>`}</div>`
+      : '';
+    gr.itens.push({ dia: g.dia, criado: g.criadoEm || '', valor: g.valor, texto: g.obs || '', extra, excluir: `data-excluir-gasto="${g.id}"` });
   });
   if (perdas.length) {
     const gr = { chave: 'perdas', nome: 'Espetinhos perdidos', total: 0, itens: [] };
     perdas.forEach((p) => {
       gr.total += valorPerda(p);
-      gr.itens.push({ dia: p.dia, criado: p.criadoEm || '', valor: valorPerda(p), texto: `${p.qtd}× ${p.nome}${p.obs ? ' · ' + p.obs : ''}${p.custo == null ? ' (sem custo)' : ''}`, excluir: `data-excluir-perda="${p.id}"` });
+      gr.itens.push({ dia: p.dia, criado: p.criadoEm || '', valor: valorPerda(p), texto: `${p.qtd}× ${p.nome}${p.obs ? ' · ' + p.obs : ''}${p.custo == null ? ' (sem custo)' : ''}`, extra: '', excluir: `data-excluir-perda="${p.id}"` });
     });
     grupos.set(gr.chave, gr);
   }
+
+  // em uso agora (sempre aparece, para tocar em "Acabou" sem procurar)
+  const emUso = dados.gastos.filter((g) => g.dura && !g.acabou);
+  const blocoUso = emUso.length ? `<div class="em-uso"><p class="passo">Em uso agora</p><ul>${emUso.map((g) => `<li>
+      <div class="info"><p><strong>${esc(nomeGasto(g))}</strong> · ${fmt(g.valor)}</p><p class="mini">${textoUso(g)}</p></div>
+      <button type="button" class="btn btn-secundario btn-pequeno" data-acabou="${g.id}">Acabou</button>
+    </li>`).join('')}</ul></div>` : '';
 
   const lista = [...grupos.values()].sort((a, b) => b.total - a.total);
   const total = lista.reduce((s, g) => s + g.total, 0);
   const box = $('#gastos-grupos');
   if (!lista.length) {
-    box.innerHTML = '<p class="vazio">Nada anotado nesse período.</p>';
+    box.innerHTML = blocoUso + '<p class="vazio">Nada anotado nesse período.</p>';
     return;
   }
-  box.innerHTML = lista.map((gr) => {
+  box.innerHTML = blocoUso + lista.map((gr) => {
     gr.itens.sort((a, b) => (b.dia + b.criado).localeCompare(a.dia + a.criado));
     return `<details class="grupo-gasto" data-grupo="${esc(gr.chave)}" ${gruposAbertos.has(gr.chave) ? 'open' : ''}>
       <summary>
         <span class="gg-linha"><span class="gg-nome">${esc(gr.nome)}</span><span class="gg-valor">${fmt(gr.total)}</span></span>
         ${barra(pctDe(gr.total, total), 'vermelha')}
-        <span class="gg-info"><span>${plural(gr.itens.length, 'vez', 'vezes')}</span><span>${pctTexto(gr.total, total)} do total</span></span>
+        <span class="gg-info"><span>${plural(gr.itens.length, 'compra', 'compras')}</span><span>${pctTexto(gr.total, total)} do total</span></span>
       </summary>
       <ul>${gr.itens.map((i) => `<li>
-        <div class="info"><p><strong>${dataBR(i.dia)}</strong>${i.texto ? ' · ' + esc(i.texto) : ''}</p></div>
+        <div class="info"><p><strong>${dataBR(i.dia)}</strong>${i.texto ? ' · ' + esc(i.texto) : ''}</p>${i.extra}</div>
         <div class="lado"><span class="valor-saida">${fmt(i.valor)}</span>
           <button type="button" class="btn btn-perigo btn-pequeno" ${i.excluir} aria-label="Excluir este gasto">Excluir</button></div>
       </li>`).join('')}</ul>
     </details>`;
-  }).join('') + `<div class="soma-total"><span>Somando tudo</span><strong>${fmt(total)}</strong></div>`;
+  }).join('') + `<div class="soma-total"><span>Somando tudo</span><strong>${fmt(total)}</strong></div>` +
+    (dados.gastos.some((g) => g.dura) ? '<p class="dica">Gastos de vários dias entram aqui só com a parte dos dias deste período.</p>' : '');
   animarBarras(box);
-}
-
-function renderTiposLista() {
-  const ul = $('#tipos-lista');
-  if (!dados.tiposGasto.length) { ul.innerHTML = '<li class="vazio">Nenhum tipo criado ainda.</li>'; return; }
-  ul.innerHTML = dados.tiposGasto.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((t) => {
-    const usados = dados.gastos.filter((g) => g.tipoId === t.id).length;
-    return `<li><div class="info"><p><strong>${esc(t.nome)}</strong></p><p class="mini">${plural(usados, 'gasto lançado', 'gastos lançados')}</p></div>
-      <div class="botoes-linha">
-        <button type="button" class="btn btn-leve btn-pequeno" data-renomear-tipo="${t.id}">Trocar nome</button>
-        <button type="button" class="btn btn-perigo btn-pequeno" data-excluir-tipo="${t.id}">Apagar</button>
-      </div></li>`;
-  }).join('');
-}
-
-async function renomearTipo(id) {
-  const t = dados.tiposGasto.find((x) => x.id === id);
-  if (!t) return;
-  const novo = ((await pedirTexto('Novo nome para este tipo de gasto:', t.nome)) || '').trim();
-  if (!novo || novo === t.nome) return;
-  if (dados.tiposGasto.some((x) => x.id !== id && semAcento(x.nome) === semAcento(novo))) { toast('Já existe um tipo com esse nome.', 'erro'); return; }
-  t.nome = novo;
-  dados.gastos.forEach((g) => { if (g.tipoId === id) g.tipoNome = novo; });
-  salvar();
-  renderGastos();
-  toast('Nome trocado.');
-}
-
-async function excluirTipo(id) {
-  const t = dados.tiposGasto.find((x) => x.id === id);
-  if (!t || !(await perguntar(`Apagar o tipo "${t.nome}"?\n\nOs gastos que já foram lançados com ele continuam nas contas.`))) return;
-  dados.tiposGasto = dados.tiposGasto.filter((x) => x.id !== id);
-  salvar();
-  renderGastos();
-  toast('Tipo apagado.');
 }
 
 async function excluirGasto(id) {
@@ -866,6 +913,7 @@ async function excluirPerda(id) {
 
 /* ================= CONTAS ================= */
 function renderContas() {
+  diasComVenda = null;
   const periodo = $('#periodo').value;
   const faixa = intervaloPeriodo(periodo);
   const mov = movimentoPorDia(faixa);
@@ -962,17 +1010,19 @@ function renderPorForma(faixa) {
 function renderParaOnde(faixa, tot) {
   const porTipo = new Map();
   dados.gastos.forEach((g) => {
-    if (!diaNoPeriodo(g.dia, faixa)) return;
-    const r = porTipo.get(g.tipoNome) || { valor: 0, vezes: 0 };
-    r.valor += g.valor; r.vezes += 1;
-    porTipo.set(g.tipoNome, r);
+    const v = parcelasGasto(g).reduce((s, [k, x]) => s + (diaNoPeriodo(k, faixa) ? x : 0), 0);
+    if (!v) return;
+    const chave = chaveNome(nomeGasto(g));
+    const r = porTipo.get(chave) || { nome: nomeGasto(g), valor: 0, vezes: 0, dura: false };
+    r.valor += v; r.vezes += 1; r.dura = r.dura || !!g.dura;
+    porTipo.set(chave, r);
   });
   const linhas = [];
   if (tot.custo || tot.qtd) {
     linhas.push({ nome: 'Custo dos espetinhos', sub: tot.semCusto ? `<span class="falta-info">${tot.semCusto} vendidos sem custo cadastrado</span>` : plural(tot.qtd, 'espetinho', 'espetinhos'), valor: tot.custo });
   }
   [...porTipo.entries()].sort((a, b) => b[1].valor - a[1].valor)
-    .forEach(([nome, r]) => linhas.push({ nome: esc(nome), sub: plural(r.vezes, 'vez', 'vezes'), valor: r.valor }));
+    .forEach(([, r]) => linhas.push({ nome: esc(r.nome), sub: r.dura ? 'dividido pelos dias de uso' : plural(r.vezes, 'vez', 'vezes'), valor: r.valor }));
   if (tot.perdas) linhas.push({ nome: 'Perdas', sub: 'estragou ou caiu', valor: tot.perdas });
 
   const total = tot.custo + tot.gastos + tot.perdas;
@@ -1407,10 +1457,8 @@ function iniciar() {
     else if (d.excluirItem) excluirItem(d.excluirItem);
     else if (d.subir) moverItem(d.subir, -1);
     else if (d.descer) moverItem(d.descer, 1);
-    else if (d.tipo) { tipoSelecionado = tipoSelecionado === d.tipo ? null : d.tipo; $('#gasto-erro').textContent = ''; renderChipsTipos(); }
-    else if ('novoTipo' in d) { $('#novo-tipo-box').hidden = false; $('#novo-tipo').focus(); }
-    else if (d.renomearTipo) renomearTipo(d.renomearTipo);
-    else if (d.excluirTipo) excluirTipo(d.excluirTipo);
+    else if (d.acabou) marcarAcabou(d.acabou);
+    else if (d.desfazerAcabou) desfazerAcabou(d.desfazerAcabou);
     else if (d.excluirGasto) excluirGasto(d.excluirGasto);
     else if (d.excluirPerda) excluirPerda(d.excluirPerda);
     else if (d.desfazer) desfazerVenda(d.desfazer);
@@ -1517,8 +1565,7 @@ function iniciar() {
 
   // Gastos
   $('#form-gasto').addEventListener('submit', lancarGasto);
-  $('#btn-add-tipo').addEventListener('click', criarTipo);
-  $('#novo-tipo').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); criarTipo(); } });
+  $('#gasto-nome').addEventListener('input', aoDigitarNomeGasto);
   $('#form-perda').addEventListener('submit', registrarPerda);
   $('#perda-item').addEventListener('change', atualizarValorPerda);
   $('#perda-qtd').addEventListener('input', atualizarValorPerda);
